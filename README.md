@@ -84,4 +84,5 @@ not what this repository contains. These libraries replace them.
 
 ## Licence
 
-BSD, matching the libraries already published.
+BSD 3-Clause; see [LICENSE](LICENSE). This matches the licence of the libraries
+already published for the older authentication method.
