@@ -1,8 +1,19 @@
 # World Text API helper libraries
 
-Helper libraries for the World Text HTTP API, [spec version 3.0](../.tmp-rot/openapi/api/spec.yaml).
+Helper libraries for the World Text HTTP API, [spec version 3.0](https://www.world-text.com/openapi/spec.yaml).
 One directory per language, each with its own README, tests, and a consistent
 design.
+
+## Where this lives
+
+| | |
+|---|---|
+| Canonical | `ssh://git@vc.nevis.io:222/general/helper-libraries.git` |
+| Public mirror | <https://github.com/worldtext/Helper-Libraries> |
+
+Changes are made on the canonical repo and mirrored to GitHub, which is what
+the website links to. The mirror is a push target, not a fork: do not accept
+edits on GitHub alone or the two will drift.
 
 ## Languages
 
