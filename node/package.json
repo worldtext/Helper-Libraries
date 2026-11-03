@@ -1,0 +1,29 @@
+{
+  "name": "world-text",
+  "version": "1.0.0",
+  "description": "Client for the World Text HTTP API (spec version 3.0), bearer authentication. Zero dependencies.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "main": "./index.js",
+  "files": [
+    "index.js",
+    "lib/"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "world-text",
+    "sms",
+    "hlr",
+    "mnp",
+    "api-client"
+  ],
+  "license": "UNLICENSED"
+}

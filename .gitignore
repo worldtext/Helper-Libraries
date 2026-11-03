@@ -1,0 +1,17 @@
+# Build and test artefacts
+
+__pycache__/
+*.py[cod]
+
+node_modules/
+*.log
+
+java/build/
+*.class
+
+# .NET
+bin/
+obj/
+.nuget/
+TestResults/
+*.trx

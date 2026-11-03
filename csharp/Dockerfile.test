@@ -1,0 +1,14 @@
+# Test image for the C# library.
+#
+# The .NET SDK image has no python3, and the shared test fixture
+# (../fixtures/mock_gateway.py) needs it to stand up a gateway. Installing it
+# here beats injecting a package install into every `docker run` invocation, and
+# keeps the test command short enough to copy accurately.
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
