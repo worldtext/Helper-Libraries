@@ -385,57 +385,60 @@ test_authentication() {
 }
 
 test_permissions() {
-    printf '\n403 - wrong scope\n'
+    printf '\n403 - wrong interface\n'
 
     saved=$WT_TOKEN
-    WT_TOKEN='test-sms'
+    WT_TOKEN='test-email'
     err=$(wt_get_credits 2>&1 >/dev/null); rc=$?
     WT_TOKEN=$saved
     show "$err"
     eq 4 "$rc" 'a wrong-scope call exits 4'
     eq permission "$(wt_last_error_kind)" 'the error kind is permission'
     eq 403 "$(wt_last_status)" 'WT_ERROR_STATUS is 403'
-    eq admin "$(wt_last_scope)" 'the required scope is exposed'
-    contains "$err" "'admin'" 'the message names the missing scope'
+    eq http "$(wt_last_scope)" 'the required scope is exposed'
+    contains "$err" "'http'" 'the message names the missing interface'
 
     # The scope is readable from a subshell too, which is how most callers
     # capture output.
     saved=$WT_TOKEN
-    WT_TOKEN='test-sms'
+    WT_TOKEN='test-email'
     captured=$(wt_get_credits 2>/dev/null)
     rc=$?
     eq 4 "$rc" 'a captured wrong-scope call exits 4'
-    eq admin "$(wt_last_scope)" 'wt_last_scope works after a $(...) capture'
+    eq http "$(wt_last_scope)" 'wt_last_scope works after a $(...) capture'
     eq permission "$(wt_last_error_kind)" 'wt_last_error_kind works after a $(...) capture'
     WT_TOKEN=$saved
 
-    # get_group_cost and send_group_sms need sms, not groups.
+    # Scopes name interfaces, so an email-only credential is refused on every
+    # operation, reads included - there is no per-operation boundary left.
     saved=$WT_TOKEN
-    WT_TOKEN='test-groups'
+    WT_TOKEN='test-email'
     wt_get_group_cost 4242 >/dev/null 2>&1
-    eq 4 "$?" 'get_group_cost refuses a groups-only token'
-    eq sms "$WT_REQUIRED_SCOPE" 'get_group_cost reports that it needs sms'
+    eq 4 "$?" 'get_group_cost refuses an email-only credential'
+    eq http "$WT_REQUIRED_SCOPE" 'get_group_cost reports that it needs http'
     wt_send_group_sms 4242 hi >/dev/null 2>&1
-    eq 4 "$?" 'send_group_sms refuses a groups-only token'
-    eq sms "$WT_REQUIRED_SCOPE" 'send_group_sms reports that it needs sms'
-
-    # ...and a groups-only token is refused on other areas too.
-    WT_TOKEN='test-sms'
+    eq 4 "$?" 'send_group_sms refuses an email-only credential'
+    eq http "$WT_REQUIRED_SCOPE" 'send_group_sms reports that it needs http'
     wt_list_groups >/dev/null 2>&1
-    eq 4 "$?" 'wt_list_groups refuses an sms-only token'
-    eq groups "$WT_REQUIRED_SCOPE" 'wt_list_groups reports that it needs groups'
-
-    # The converse: an sms token may price and send to a group.
-    out=$(wt_get_group_cost 4242 2>/dev/null); rc=$?
-    eq 0 "$rc" 'get_group_cost works with an sms token'
-    contains "$out" '"credits"' 'get_group_cost returned a cost for the sms token'
-
-    WT_TOKEN='test-hlr'
+    eq 4 "$?" 'wt_list_groups refuses an email-only credential'
+    eq http "$WT_REQUIRED_SCOPE" 'wt_list_groups reports that it needs http'
     wt_lookup_hlr 447989000001 >/dev/null 2>&1
-    eq 0 "$?" 'hlr lookup works with an hlr token'
+    eq 4 "$?" 'an email-only credential cannot look up a number'
+    eq http "$WT_REQUIRED_SCOPE" 'that refusal names the http interface'
+    # A credential with no interfaces at all is refused likewise.
+    WT_TOKEN='test-none'
     wt_get_credits >/dev/null 2>&1
-    eq 4 "$?" 'an hlr token cannot read credits'
-    eq admin "$WT_REQUIRED_SCOPE" 'that refusal names the admin scope'
+    eq 4 "$?" 'a credential with no interfaces is refused'
+
+    # The converse: an http credential may use every operation.
+    WT_TOKEN='test-http'
+    out=$(wt_get_group_cost 4242 2>/dev/null); rc=$?
+    eq 0 "$rc" 'get_group_cost works with an http credential'
+    contains "$out" '"credits"' 'get_group_cost returned a cost'
+    wt_lookup_hlr 447989000001 >/dev/null 2>&1
+    eq 0 "$?" 'hlr lookup works with an http credential'
+    wt_get_credits >/dev/null 2>&1
+    eq 0 "$?" 'credits work with the same credential'
     WT_TOKEN=$saved
 }
 

@@ -25,9 +25,9 @@ edits on GitHub alone or the two will drift.
 | [`java/`](java/README.md) | Java 8+ | 26 | no external deps |
 | [`go/`](go/README.md) | Go 1.22+ | 16 | stdlib only |
 | [`csharp/`](csharp/README.md) | C# / .NET 8 | 38 | HttpClient + System.Text.Json |
-| [`rest/`](rest/README.md) | any (cURL reference) | 123 | POSIX shell + curl |
+| [`rest/`](rest/README.md) | any (cURL reference) | 125 | POSIX shell + curl |
 
-**Tree-wide: 282 assertions, all passing.**
+**Tree-wide: 284 assertions, all passing.**
 
 ## Design, shared across every language
 

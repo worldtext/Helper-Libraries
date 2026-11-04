@@ -318,10 +318,10 @@ final class WorldText
     }
 
     /**
-     * Pull `scope="sms"` out of a `WWW-Authenticate` header, if present.
+     * Pull `scope="http"` out of a `WWW-Authenticate` header, if present.
      *
      * The header looks like:
-     * `Bearer error="insufficient_scope", scope="admin"`.
+     * `Bearer error="insufficient_scope", scope="http"`.
      */
     public static function scopeFromHeader(?string $header): ?string
     {
@@ -375,7 +375,7 @@ final class WorldText
     }
 
     /**
-     * Name of the host that served the request. Requires `admin`.
+     * Name of the host that served the request. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -387,7 +387,7 @@ final class WorldText
     // ------------------------------------------------------------------- sms
 
     /**
-     * Cost of a single message without sending it. Requires `sms`.
+     * Cost of a single message without sending it. Requires ``http``.
      *
      * @param string $dstaddr Destination number.
      * @param string $message Text to price; the default prices a short message.
@@ -403,7 +403,7 @@ final class WorldText
     }
 
     /**
-     * Send to one destination. Requires `sms`.
+     * Send to one destination. Requires ``http``.
      *
      * `$options` are passed through, so optional fields (`sendid`, `schedule`,
      * `sender`, `udh`) work without this client needing to enumerate them as
@@ -424,7 +424,7 @@ final class WorldText
     }
 
     /**
-     * Delivery state of a sent message. Requires `sms`.
+     * Delivery state of a sent message. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -438,7 +438,7 @@ final class WorldText
     // ------------------------------------------------------------------- hlr
 
     /**
-     * HLR lookup. Requires `hlr`. Costs a credit.
+     * HLR lookup. Requires ``http``. Costs a credit.
      *
      * @throws WorldTextException
      */
@@ -450,7 +450,7 @@ final class WorldText
     }
 
     /**
-     * Mobile number portability. Requires `hlr`.
+     * Mobile number portability. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -462,7 +462,7 @@ final class WorldText
     }
 
     /**
-     * Country and network for a number. Requires `hlr`.
+     * Country and network for a number. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -476,7 +476,7 @@ final class WorldText
     // ---------------------------------------------------------------- groups
 
     /**
-     * Create a group. Requires `groups`.
+     * Create a group. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -488,7 +488,7 @@ final class WorldText
     }
 
     /**
-     * Delete a group and its contents. Requires `groups`.
+     * Delete a group and its contents. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -500,7 +500,7 @@ final class WorldText
     }
 
     /**
-     * Add one number to a group. Requires `groups`.
+     * Add one number to a group. Requires ``http``.
      *
      * @param array<string, scalar> $options Extra form fields, e.g. `sendid`.
      *
@@ -518,7 +518,7 @@ final class WorldText
     }
 
     /**
-     * Remove one number from a group. Requires `groups`.
+     * Remove one number from a group. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -531,7 +531,7 @@ final class WorldText
     }
 
     /**
-     * Add several numbers, one per line, as the API expects. Requires `groups`.
+     * Add several numbers, one per line, as the API expects. Requires ``http``.
      *
      * @param list<string> $numbers Numbers to add.
      *
@@ -556,7 +556,7 @@ final class WorldText
     }
 
     /**
-     * Numbers in a group. Requires `groups`.
+     * Numbers in a group. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -568,7 +568,7 @@ final class WorldText
     }
 
     /**
-     * Numbers in a group with their status. Requires `groups`.
+     * Numbers in a group with their status. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -580,7 +580,7 @@ final class WorldText
     }
 
     /**
-     * All groups on the account. Requires `groups`.
+     * All groups on the account. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -590,7 +590,7 @@ final class WorldText
     }
 
     /**
-     * Remove every number from a group, keeping the group. Requires `groups`.
+     * Remove every number from a group, keeping the group. Requires ``http``.
      *
      * @throws WorldTextException
      */
@@ -604,7 +604,7 @@ final class WorldText
     /**
      * Cost of sending to a whole group.
      *
-     * Requires `sms`, not `groups`. That is the gateway's actual behaviour, not
+     * Requires ``http``, not `groups`. That is the gateway's actual behaviour, not
      * a documentation slip.
      *
      * @throws WorldTextException
@@ -618,7 +618,7 @@ final class WorldText
     }
 
     /**
-     * Send to every number in a group. Requires `sms`, not `groups`.
+     * Send to every number in a group. Requires ``http``, not `groups`.
      *
      * @param array<string, scalar> $options Extra form fields.
      *

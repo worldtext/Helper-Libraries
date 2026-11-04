@@ -453,7 +453,7 @@ public class WorldText {
     }
 
     /**
-     * Pull {@code scope="sms"} out of a {@code WWW-Authenticate} header, if
+     * Pull {@code scope="http"} out of a {@code WWW-Authenticate} header, if
      * present. Headers may be split across several values; each is searched.
      */
     static String scopeFromHeader(List<String> headerValues) {

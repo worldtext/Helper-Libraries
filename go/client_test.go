@@ -34,6 +34,8 @@ const (
 	tokenGroups = "test-groups"
 	tokenAdmin  = "test-admin"
 	tokenHlr    = "test-hlr"
+	tokenHTTP   = "test-http"
+	tokenEmail  = "test-email"
 	tokenAll    = "test-all"
 )
 
@@ -325,21 +327,22 @@ func TestGroupLifecycle(t *testing.T) {
 	}
 }
 
-func TestGroupCostAndSendRequireSmsNotGroups(t *testing.T) {
+func TestGroupCostAndSendRequireTheHTTPInterface(t *testing.T) {
 	ctx := context.Background()
 
-	// A groups token has no sms permission; these routes must refuse it.
+	// Scopes name interfaces: an email-only credential is refused on these
+	// routes even though pricing a send costs nothing.
 	for name, call := range map[string]func(*worldtext.Client) error{
 		"GetGroupCost": func(c *worldtext.Client) error { _, err := c.GetGroupCost(ctx, "4242", "hi"); return err },
 		"SendGroupSms": func(c *worldtext.Client) error { _, err := c.SendGroupSms(ctx, "4242", "hi", nil); return err },
 	} {
 		var permErr *worldtext.PermissionError
-		if err := call(newClient(t, tokenGroups)); !errors.As(err, &permErr) {
-			t.Errorf("%s with a groups token: got %v, want *PermissionError", name, err)
+		if err := call(newClient(t, tokenEmail)); !errors.As(err, &permErr) {
+			t.Errorf("%s with an email credential: got %v, want *PermissionError", name, err)
 		}
 	}
 
-	cost, err := newClient(t, tokenSms).GetGroupCost(ctx, "4242", "hi")
+	cost, err := newClient(t, tokenHTTP).GetGroupCost(ctx, "4242", "hi")
 	if err != nil {
 		t.Fatalf("GetGroupCost: %v", err)
 	}
@@ -384,7 +387,7 @@ func TestBadTokenIs401(t *testing.T) {
 }
 
 func TestWrongScopeIs403WithRequiredScope(t *testing.T) {
-	_, err := newClient(t, tokenSms).GetCredits(context.Background())
+	_, err := newClient(t, tokenEmail).GetCredits(context.Background())
 	if err == nil {
 		t.Fatal("expected an error, got nil")
 	}
@@ -400,8 +403,8 @@ func TestWrongScopeIs403WithRequiredScope(t *testing.T) {
 		t.Errorf("HTTPStatus = %d, want 403", permErr.Base.HTTPStatus)
 	}
 	// The required scope is surfaced so the caller can say which to add.
-	if permErr.RequiredScope != "admin" {
-		t.Errorf("RequiredScope = %q, want admin", permErr.RequiredScope)
+	if permErr.RequiredScope != "http" {
+		t.Errorf("RequiredScope = %q, want http", permErr.RequiredScope)
 	}
 	var authErr *worldtext.AuthenticationError
 	if errors.As(err, &authErr) {
@@ -451,7 +454,7 @@ func TestAllErrorsMatchASentinelAndShareFields(t *testing.T) {
 		sentinel error
 	}{
 		{"auth", func(c *worldtext.Client) error { _, err := c.GetCredits(ctx); return err }, "nope", worldtext.ErrAuthentication},
-		{"perm", func(c *worldtext.Client) error { _, err := c.GetCredits(ctx); return err }, tokenSms, worldtext.ErrPermission},
+		{"perm", func(c *worldtext.Client) error { _, err := c.GetCredits(ctx); return err }, tokenEmail, worldtext.ErrPermission},
 		{"api", func(c *worldtext.Client) error { _, err := c.GetSmsCost(ctx, "", ""); return err }, tokenSms, worldtext.ErrAPI},
 	}
 	for _, tc := range cases {

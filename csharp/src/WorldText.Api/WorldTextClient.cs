@@ -390,7 +390,7 @@ public sealed class WorldTextClient : IDisposable
     /// <summary>Pulls the required scope out of a <c>WWW-Authenticate</c> header, if present.</summary>
     /// <remarks>
     /// The header looks like
-    /// <c>Bearer error="insufficient_scope", scope="admin"</c>.
+    /// <c>Bearer error="insufficient_scope", scope="http"</c>.
     /// </remarks>
     internal static string? ScopeFromHeader(HttpResponseMessage response)
     {

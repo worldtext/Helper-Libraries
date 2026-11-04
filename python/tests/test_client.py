@@ -95,11 +95,12 @@ class TestSuccess(MockTestCase):
         wt.delete_group_contents("4242")
         wt.delete_group("4242")
 
-    def test_group_cost_needs_sms_not_groups(self):
-        # The spec says group/cost requires sms; a groups token must be refused.
+    def test_group_cost_needs_the_http_interface(self):
+        # Scopes name interfaces: an email-only credential is refused here even
+        # though reading a price spends nothing.
         self.assertEqual(self.client("test-sms").get_group_cost("4242").credits, "2.0")
         with self.assertRaises(PermissionError_):
-            self.client("test-groups").get_group_cost("4242")
+            self.client("test-email").get_group_cost("4242")
 
     def test_hlr(self):
         wt = self.client("test-hlr")
@@ -115,12 +116,12 @@ class TestErrors(MockTestCase):
         self.assertEqual(ctx.exception.http_status, 401)
         self.assertEqual(ctx.exception.error_code, "1000")
 
-    def test_wrong_scope_is_403_with_scope(self):
+    def test_wrong_interface_is_403_with_scope(self):
         with self.assertRaises(PermissionError_) as ctx:
-            self.client("test-sms").get_credits()
+            self.client("test-email").get_credits()
         self.assertEqual(ctx.exception.http_status, 403)
-        # The required scope is surfaced so the caller can say which one to add.
-        self.assertEqual(ctx.exception.required_scope, "admin")
+        # The required interface is surfaced so the caller can say which one to add.
+        self.assertEqual(ctx.exception.required_scope, "http")
 
     def test_missing_argument_is_400(self):
         with self.assertRaises(ApiError) as ctx:
@@ -132,7 +133,7 @@ class TestErrors(MockTestCase):
     def test_all_errors_share_a_base_class(self):
         for token, exc in [
             ("nope", AuthenticationError),
-            ("test-sms", PermissionError_),
+            ("test-email", PermissionError_),
         ]:
             with self.assertRaises(WorldTextError) as ctx:
                 self.client(token).get_credits()

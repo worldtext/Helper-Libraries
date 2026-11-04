@@ -26,37 +26,47 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 
-# Tokens the mock accepts, and the permissions each carries.
+# Tokens the mock accepts, and the interfaces each may be used on.
+#
+# Scopes name interfaces, not areas of the API, so every route below needs the
+# same one. The historical names are kept as aliases carrying "http" so that
+# existing success-path tests stay valid; the ones that must be refused carry an
+# interface this gateway does not serve.
 TOKENS = {
-    "test-sms": {"sms"},
-    "test-groups": {"groups"},
-    "test-admin": {"admin"},
-    "test-hlr": {"hlr"},
-    "test-all": {"sms", "groups", "admin", "hlr"},
+    "test-sms": {"http"},
+    "test-groups": {"http"},
+    "test-admin": {"http"},
+    "test-hlr": {"http"},
+    "test-http": {"http"},
+    "test-email": {"email"},
+    "test-bulk": {"bulk"},
+    "test-none": set(),
+    "test-all": {"http", "email", "bulk"},
 }
 
-# path -> permission. Mirrors ScopePolicy in wthttpgw.
+# path -> required interface. Mirrors ScopePolicy in wthttpgw, which requires
+# "http" for every operation it serves.
 SCOPES = {
-    "/admin/credits": "admin",
-    "/admin/ping": "admin",
-    "/admin/host": "admin",
-    "/hlr/lookup": "hlr",
-    "/hlr/mnp": "hlr",
-    "/hlr/info": "hlr",
-    "/sms/send": "sms",
-    "/sms/cost": "sms",
-    "/sms/status": "sms",
-    "/sms/query": "sms",
-    "/group/cost": "sms",
-    "/group/send": "sms",
-    "/group/create": "groups",
-    "/group/destroy": "groups",
-    "/group/entry": "groups",
-    "/group/entries": "groups",
-    "/group/numbers": "groups",
-    "/group/details": "groups",
-    "/group/list": "groups",
-    "/group/contents": "groups",
+    "/admin/credits": "http",
+    "/admin/ping": "http",
+    "/admin/host": "http",
+    "/hlr/lookup": "http",
+    "/hlr/mnp": "http",
+    "/hlr/info": "http",
+    "/sms/send": "http",
+    "/sms/cost": "http",
+    "/sms/status": "http",
+    "/sms/query": "http",
+    "/group/cost": "http",
+    "/group/send": "http",
+    "/group/create": "http",
+    "/group/destroy": "http",
+    "/group/entry": "http",
+    "/group/entries": "http",
+    "/group/numbers": "http",
+    "/group/details": "http",
+    "/group/list": "http",
+    "/group/contents": "http",
 }
 
 OK = "0"
@@ -111,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
                              'Bearer error="insufficient_scope", scope="%s"' % needed)
             self.send_header("Content-Type", "application/json")
             body = json.dumps(envelope_error(
-                1000, "[RFC6750] The access token does not cover this operation")).encode()
+                1000, "[RFC6750] This credential is not enabled for the %s interface" % needed)).encode()
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)

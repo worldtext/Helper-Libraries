@@ -217,26 +217,27 @@ $suite->test('delete returns a count only when the gateway sends one', function 
     Assert::same(null, $entry->deleted, 'no deletion count for one entry');
 });
 
-$suite->test('group cost needs sms, not groups', function () use ($mock): void {
-    // The spec says /group/cost requires sms; a groups-only token is refused.
-    Assert::same('2.0', client($mock, 'test-sms')->getGroupCost('4242')->credits, 'group cost credits');
+$suite->test('group cost needs the http interface', function () use ($mock): void {
+    // Scopes name interfaces, so an email-only credential is refused here even
+    // though pricing a send costs nothing.
+    Assert::same('2.0', client($mock, 'test-http')->getGroupCost('4242')->credits, 'group cost credits');
 
     $error = Assert::throws(
         PermissionException::class,
-        fn () => client($mock, 'test-groups')->getGroupCost('4242'),
-        'groups token pricing a group send',
+        fn () => client($mock, 'test-email')->getGroupCost('4242'),
+        'email credential pricing a group send',
     );
-    Assert::same('sms', $error->getRequiredScope(), 'required scope');
+    Assert::same('http', $error->getRequiredScope(), 'required scope');
 });
 
-$suite->test('group send needs sms, not groups', function () use ($mock): void {
-    $sent = client($mock, 'test-sms')->sendGroupSms('4242', 'hello');
+$suite->test('group send needs the http interface', function () use ($mock): void {
+    $sent = client($mock, 'test-http')->sendGroupSms('4242', 'hello');
     Assert::same('10002', $sent->msgid(), 'group send msgid');
 
     Assert::throws(
         PermissionException::class,
-        fn () => client($mock, 'test-groups')->sendGroupSms('4242', 'hello'),
-        'groups token sending to a group',
+        fn () => client($mock, 'test-email')->sendGroupSms('4242', 'hello'),
+        'email credential sending to a group',
     );
 });
 
@@ -323,15 +324,15 @@ $suite->test('bad token is 401', function () use ($mock): void {
     Assert::false($error->isRetryable(), '401 is not retryable');
 });
 
-$suite->test('wrong scope is 403 and exposes the required scope', function () use ($mock): void {
+$suite->test('wrong interface is 403 and exposes the required scope', function () use ($mock): void {
     $error = Assert::throws(
         PermissionException::class,
-        fn () => client($mock, 'test-sms')->getCredits(),
-        'sms token reading credits',
+        fn () => client($mock, 'test-email')->getCredits(),
+        'email credential reading credits',
     );
     Assert::same(403, $error->getHttpStatus(), 'http status');
-    // The required scope is surfaced so the caller can say which one to add.
-    Assert::same('admin', $error->getRequiredScope(), 'required scope');
+    // The required interface is surfaced so the caller can say which one to add.
+    Assert::same('http', $error->getRequiredScope(), 'required scope');
     Assert::false($error->isRetryable(), '403 is not retryable');
 });
 
@@ -354,7 +355,7 @@ $suite->test('missing argument is 400 from the gateway', function () use ($mock)
 $suite->test('missing group name is 400 from the gateway', function () use ($mock): void {
     $error = Assert::throws(
         ApiException::class,
-        fn () => (new WorldText('test-groups', $mock->baseUrl(), 5.0))
+        fn () => (new WorldText('test-http', $mock->baseUrl(), 5.0))
             ->requestRaw('PUT', '/group/create', []),
         'no name',
     );
@@ -363,7 +364,7 @@ $suite->test('missing group name is 400 from the gateway', function () use ($moc
 });
 
 $suite->test('all errors share a base class', function () use ($mock): void {
-    foreach ([['nope', AuthenticationException::class], ['test-sms', PermissionException::class]] as [$token, $type]) {
+    foreach ([['nope', AuthenticationException::class], ['test-email', PermissionException::class]] as [$token, $type]) {
         $error = Assert::throws(
             WorldTextException::class,
             fn () => client($mock, $token)->getCredits(),

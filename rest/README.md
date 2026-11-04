@@ -57,18 +57,21 @@ Authorization: Bearer <token>
 There is **no** query-string `id`/`key` authentication in API 3.0. A request
 that carries them and no bearer header is a 401.
 
-A token carries one or more of four independent permissions:
+A token names the interfaces it may be used on:
 
-| Permission | Covers |
+| Interface | Where the credential may be used |
 |---|---|
-| `admin` | `ping`, `getCredits`, `getHost` |
-| `sms` | `getSmsCost`, `sendSms`, `querySmsStatus`, **`getGroupCost`**, **`sendGroupSms`** |
-| `groups` | `createGroup` … `deleteGroupContents` (group administration) |
-| `hlr` | `lookupHlr`, `lookupMnp`, `getNumberInfo` |
+| `http` | this HTTP API |
+| `email` | email to SMS, one message per email |
+| `bulk` | the bulk email mailbox, one email for many messages |
 
-`getGroupCost` and `sendGroupSms` need **`sms`, not `groups`**. That is the
-gateway's behaviour, not a documentation slip: those routes price and perform a
-send, so they belong to the send permission.
+It is not a list of operations: a credential carrying `http` can use this whole
+API and can send messages, because that is what a token is issued for. Every
+request below needs `http`. A call from an interface the token does not carry
+returns a 403 with the standard envelope.
+
+The HLR lookups are charged even though they only read, so an `http` token can
+spend credits without sending. Issue a separate token per system.
 
 The helper never prints, logs or puts the token on a command line. It reaches
 curl through a private config file that is removed as soon as the request
@@ -86,7 +89,7 @@ float, and never for ids.
 
 `PUT` and `POST` are interchangeable on every write route.
 
-### Admin — permission `admin`
+### Admin
 
 #### `ping` — liveness
 
@@ -94,7 +97,7 @@ float, and never for ids.
 |---|---|
 | Method / path | `GET /admin/ping` |
 | Parameters | none |
-| Permission | `admin` |
+| Interface | `http` |
 | Helper | `wt_ping` |
 
 ```sh
@@ -111,7 +114,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/admin/ping"
 |---|---|
 | Method / path | `GET /admin/credits` |
 | Parameters | none |
-| Permission | `admin` |
+| Interface | `http` |
 | Helper | `wt_get_credits` |
 
 ```sh
@@ -131,7 +134,7 @@ customers see credits used this period as a negative balance.
 |---|---|
 | Method / path | `GET /admin/host` |
 | Parameters | none |
-| Permission | `admin` |
+| Interface | `http` |
 | Helper | `wt_get_host` |
 
 ```sh
@@ -142,7 +145,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/admin/host"
 {"status": "0", "hostname": "sms1.example"}
 ```
 
-### SMS — permission `sms`
+### SMS
 
 #### `getSmsCost` — price one message without sending it
 
@@ -150,7 +153,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/admin/host"
 |---|---|
 | Method / path | `GET /sms/cost` |
 | Required | `dstaddr` — E.164 without the leading `+` |
-| Permission | `sms` |
+| Interface | `http` |
 | Helper | `wt_get_sms_cost <dstaddr> [message]` |
 
 ```sh
@@ -168,7 +171,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 |---|---|
 | Method / path | `PUT /sms/send` (alias: `POST /sms/send`) |
 | Required | `dstaddr`, `txt` |
-| Permission | `sms` |
+| Interface | `http` |
 | Helper | `wt_send_sms <dstaddr> <message> [param=value ...]` |
 
 | Parameter | Required | Notes |
@@ -205,7 +208,7 @@ string — it may contain hyphens and is not a number.
 |---|---|
 | Method / path | `GET /sms/query` |
 | Required | `msgid` |
-| Permission | `sms` |
+| Interface | `http` |
 | Helper | `wt_query_sms_status <msgid>` |
 
 ```sh
@@ -220,7 +223,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 `finaldate` is absent until the message reaches a final state. At volume, use a
 delivery-receipt callback rather than polling.
 
-### Lookups — permission `hlr`
+### Lookups
 
 All take `msisdn` (E.164, no `+`) and each successful lookup costs a credit.
 
@@ -230,7 +233,7 @@ All take `msisdn` (E.164, no `+`) and each successful lookup costs a credit.
 |---|---|
 | Method / path | `GET /hlr/lookup` |
 | Required | `msisdn` |
-| Permission | `hlr` |
+| Interface | `http` |
 | Helper | `wt_lookup_hlr <msisdn>` |
 
 ```sh
@@ -248,7 +251,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 |---|---|
 | Method / path | `GET /hlr/mnp` |
 | Required | `msisdn` |
-| Permission | `hlr` |
+| Interface | `http` |
 | Helper | `wt_lookup_mnp <msisdn>` |
 
 ```sh
@@ -266,7 +269,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 |---|---|
 | Method / path | `GET /hlr/info` |
 | Required | `msisdn` |
-| Permission | `hlr` |
+| Interface | `http` |
 | Helper | `wt_get_number_info <msisdn>` |
 
 ```sh
@@ -278,7 +281,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 {"status": "0", "cc": "44", "mcc": "234", "mnc": "10", "country": "United Kingdom", "network": "O2-UK", "credits": "1.0"}
 ```
 
-### Groups — permission `groups` (except the two marked `sms`)
+### Groups
 
 **Group id naming.** The id comes back as **`grpid`** from most routes and
 **`groupid`** from `/group/create`; some routes accept either. Treat them as
@@ -292,7 +295,7 @@ anywhere a group id is wanted.
 | Method / path | `PUT /group/create` |
 | Required | `name` |
 | Optional | `srcaddr`, `pin` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_create_group <name> [srcaddr=...] [pin=...]` |
 
 ```sh
@@ -310,7 +313,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X PUT \
 |---|---|
 | Method / path | `DELETE /group/destroy` |
 | Required | `grpid` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_delete_group <grpid>` |
 
 ```sh
@@ -329,7 +332,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X DELETE -G \
 | Method / path | `PUT /group/entry` |
 | Required | `grpid`, `dstaddr` |
 | Optional | `name` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_add_group_entry <grpid> <number> [name=...]` |
 
 This route names the number **`dstaddr`**, unlike the other group routes.
@@ -352,7 +355,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X PUT \
 |---|---|
 | Method / path | `DELETE /group/entry` |
 | Required | `grpid`, `dstaddr` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_delete_group_entry <grpid> <number>` |
 
 Arguments ride in the **query string**: a form-encoded `DELETE` body is not
@@ -375,7 +378,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X DELETE -G \
 |---|---|
 | Method / path | `PUT /group/entries` |
 | Required | `grpid`, `members` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_add_group_entries <grpid> 'number:name,…'` or `… <number> [number …]` |
 
 `members` is one comma-separated string of `number:name` pairs. Every entry
@@ -399,7 +402,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X PUT \
 |---|---|
 | Method / path | `GET /group/numbers` |
 | Required | `grpid` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_get_group_numbers <grpid>` |
 
 ```sh
@@ -417,7 +420,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 |---|---|
 | Method / path | `GET /group/details` |
 | Required | `grpid` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_get_group_details <grpid>` |
 
 ```sh
@@ -435,7 +438,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 |---|---|
 | Method / path | `GET /group/list` |
 | Parameters | none |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_list_groups` |
 
 ```sh
@@ -452,7 +455,7 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/group/list"
 |---|---|
 | Method / path | `DELETE /group/contents` |
 | Required | `grpid` |
-| Permission | `groups` |
+| Interface | `http` |
 | Helper | `wt_delete_group_contents <grpid>` |
 
 ```sh
@@ -464,14 +467,14 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X DELETE -G \
 {"status": "0", "deleted": "2"}
 ```
 
-#### `getGroupCost` — price a send to a whole group — **permission `sms`**
+#### `getGroupCost` — price a send to a whole group
 
 | | |
 |---|---|
 | Method / path | `GET /group/cost` |
 | Required | `grpid` |
 | Optional | `multipart` |
-| Permission | **`sms`** |
+| Interface | `http` |
 | Helper | `wt_get_group_cost <grpid> [multipart]` |
 
 ```sh
@@ -483,16 +486,14 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -G \
 {"status": "0", "credits": "2.0", "entrycount": "2"}
 ```
 
-A `groups`-only token is refused here with `scope="sms"`.
-
-#### `sendGroupSms` — send to every number in a group — **permission `sms`**
+#### `sendGroupSms` — send to every number in a group
 
 | | |
 |---|---|
 | Method / path | `PUT /group/send` (alias: `POST /group/send`) |
 | Required | `grpid`, `txt` |
 | Optional | `srcaddr`, `clientref`, `sendid`, `multipart`, `enc`, `sim` |
-| Permission | **`sms`** |
+| Interface | `http` |
 | Helper | `wt_send_group_sms <grpid> <message> [param=value ...]` |
 
 ```sh
@@ -513,28 +514,28 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" -X PUT \
 All 20 operations, plus four accessors. Every function prints the gateway's
 JSON envelope on stdout and returns 0 on success.
 
-| Operation | Function | Permission |
+| Operation | Function | Interface |
 |---|---|---|
-| `ping` | `wt_ping` | `admin` |
-| `getCredits` | `wt_get_credits` | `admin` |
-| `getHost` | `wt_get_host` | `admin` |
-| `getSmsCost` | `wt_get_sms_cost <dstaddr> [message]` | `sms` |
-| `sendSms` | `wt_send_sms <dstaddr> <message> [param=value …]` | `sms` |
-| `querySmsStatus` | `wt_query_sms_status <msgid>` | `sms` |
-| `lookupHlr` | `wt_lookup_hlr <msisdn>` | `hlr` |
-| `lookupMnp` | `wt_lookup_mnp <msisdn>` | `hlr` |
-| `getNumberInfo` | `wt_get_number_info <msisdn>` | `hlr` |
-| `createGroup` | `wt_create_group <name> [srcaddr=…] [pin=…]` | `groups` |
-| `deleteGroup` | `wt_delete_group <grpid>` | `groups` |
-| `addGroupEntry` | `wt_add_group_entry <grpid> <number> [name=…]` | `groups` |
-| `deleteGroupEntry` | `wt_delete_group_entry <grpid> <number>` | `groups` |
-| `addGroupEntries` | `wt_add_group_entries <grpid> <number> [number …]` | `groups` |
-| `getGroupNumbers` | `wt_get_group_numbers <grpid>` | `groups` |
-| `getGroupDetails` | `wt_get_group_details <grpid>` | `groups` |
-| `listGroups` | `wt_list_groups` | `groups` |
-| `deleteGroupContents` | `wt_delete_group_contents <grpid>` | `groups` |
-| `getGroupCost` | `wt_get_group_cost <grpid> [multipart]` | **`sms`** |
-| `sendGroupSms` | `wt_send_group_sms <grpid> <message> [param=value …]` | **`sms`** |
+| `ping` | `wt_ping` | `http` |
+| `getCredits` | `wt_get_credits` | `http` |
+| `getHost` | `wt_get_host` | `http` |
+| `getSmsCost` | `wt_get_sms_cost <dstaddr> [message]` | `http` |
+| `sendSms` | `wt_send_sms <dstaddr> <message> [param=value …]` | `http` |
+| `querySmsStatus` | `wt_query_sms_status <msgid>` | `http` |
+| `lookupHlr` | `wt_lookup_hlr <msisdn>` | `http` |
+| `lookupMnp` | `wt_lookup_mnp <msisdn>` | `http` |
+| `getNumberInfo` | `wt_get_number_info <msisdn>` | `http` |
+| `createGroup` | `wt_create_group <name> [srcaddr=…] [pin=…]` | `http` |
+| `deleteGroup` | `wt_delete_group <grpid>` | `http` |
+| `addGroupEntry` | `wt_add_group_entry <grpid> <number> [name=…]` | `http` |
+| `deleteGroupEntry` | `wt_delete_group_entry <grpid> <number>` | `http` |
+| `addGroupEntries` | `wt_add_group_entries <grpid> <number> [number …]` | `http` |
+| `getGroupNumbers` | `wt_get_group_numbers <grpid>` | `http` |
+| `getGroupDetails` | `wt_get_group_details <grpid>` | `http` |
+| `listGroups` | `wt_list_groups` | `http` |
+| `deleteGroupContents` | `wt_delete_group_contents <grpid>` | `http` |
+| `getGroupCost` | `wt_get_group_cost <grpid> [multipart]` | `http` |
+| `sendGroupSms` | `wt_send_group_sms <grpid> <message> [param=value …]` | `http` |
 
 Optional `param=value` arguments are sent verbatim, so `clientref=`,
 `srcaddr=`, `sim=` and the rest work without the helper enumerating them.

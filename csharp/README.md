@@ -33,34 +33,35 @@ Bearer tokens only. Create one in the admin console or customer portal, ticking
 the permissions it needs. There is no query-string `id`/`key` support — that
 form is not part of API 3.0.
 
-A token carries one or more of four independent permissions: `sms`, `groups`,
-`admin`, `hlr`. Calling outside them throws `PermissionDeniedException`, whose
-`RequiredScope` names what was missing.
+A token names the interfaces it may be used on: `http`, `email` or `bulk`. It is
+not a list of operations: a credential carrying `http` can use this whole API
+and can send messages, because that is what a token is issued for. A call from
+an interface the token does not carry raises `PermissionDeniedException`.
 
 ## Methods
 
-| Method | Permission | Notes |
+| Method | Interface | Notes |
 |---|---|---|
-| `PingAsync()` | `admin` | Liveness |
-| `GetCreditsAsync()` | `admin` | Balance |
-| `GetHostAsync()` | `admin` | Serving host |
-| `GetSmsCostAsync(dstaddr, message)` | `sms` | Price without sending |
-| `SendSmsAsync(dstaddr, message, …)` | `sms` | |
-| `QuerySmsStatusAsync(msgid)` | `sms` | Delivery state |
-| `LookupHlrAsync(msisdn)` | `hlr` | Costs a credit |
-| `LookupMnpAsync(msisdn)` | `hlr` | Porting status |
-| `GetNumberInfoAsync(msisdn)` | `hlr` | Country / network |
-| `CreateGroupAsync(name)` | `groups` | Returns `Grpid` |
-| `DeleteGroupAsync(grpid)` | `groups` | |
-| `AddGroupEntryAsync(grpid, number)` | `groups` | |
-| `DeleteGroupEntryAsync(grpid, number)` | `groups` | |
-| `AddGroupEntriesAsync(grpid, numbers)` | `groups` | `IEnumerable<string>` |
-| `GetGroupNumbersAsync(grpid)` | `groups` | |
-| `GetGroupDetailsAsync(grpid)` | `groups` | With per-number status |
-| `ListGroupsAsync()` | `groups` | |
-| `DeleteGroupContentsAsync(grpid)` | `groups` | Keeps the group |
-| `GetGroupCostAsync(grpid, message)` | **`sms`** | Prices a send, not a group edit |
-| `SendGroupSmsAsync(grpid, message, …)` | **`sms`** | |
+| `PingAsync()` | `http` | Liveness |
+| `GetCreditsAsync()` | `http` | Balance |
+| `GetHostAsync()` | `http` | Serving host |
+| `GetSmsCostAsync(dstaddr, message)` | `http` | Price without sending |
+| `SendSmsAsync(dstaddr, message, …)` | `http` | |
+| `QuerySmsStatusAsync(msgid)` | `http` | Delivery state |
+| `LookupHlrAsync(msisdn)` | `http` | Costs a credit |
+| `LookupMnpAsync(msisdn)` | `http` | Porting status |
+| `GetNumberInfoAsync(msisdn)` | `http` | Country / network |
+| `CreateGroupAsync(name)` | `http` | Returns `Grpid` |
+| `DeleteGroupAsync(grpid)` | `http` | |
+| `AddGroupEntryAsync(grpid, number)` | `http` | |
+| `DeleteGroupEntryAsync(grpid, number)` | `http` | |
+| `AddGroupEntriesAsync(grpid, numbers)` | `http` | `IEnumerable<string>` |
+| `GetGroupNumbersAsync(grpid)` | `http` | |
+| `GetGroupDetailsAsync(grpid)` | `http` | With per-number status |
+| `ListGroupsAsync()` | `http` | |
+| `DeleteGroupContentsAsync(grpid)` | `http` | Keeps the group |
+| `GetGroupCostAsync(grpid, message)` | `http` | Prices a send, not a group edit |
+| `SendGroupSmsAsync(grpid, message, …)` | `http` | |
 
 ## Numbers are strings
 

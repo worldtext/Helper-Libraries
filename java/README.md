@@ -44,9 +44,10 @@ try { wt.getCredits(); } catch (PermissionDeniedException e) { e.getRequiredScop
 Bearer tokens only: every request carries `Authorization: Bearer <token>`. There
 is no query-string `id`/`key` support — that form is not part of API 3.0.
 
-A token carries one or more of four independent permissions: `sms`, `groups`,
-`admin`, `hlr`. Calling an operation outside its permissions throws
-`PermissionDeniedException`, whose `getRequiredScope()` names what is missing.
+A token names the interfaces it may be used on: `http`, `email` or `bulk`. It is
+not a list of operations: a credential carrying `http` can use this whole API
+and can send messages, because that is what a token is issued for. A call from
+an interface the token does not carry raises `PermissionDeniedException`.
 
 ## Methods
 
@@ -54,31 +55,29 @@ Every method takes and returns strings where the API uses strings. Where a
 value is genuinely arithmetic, the model offers a numeric accessor (`asDecimal()`)
 returning `BigDecimal`; nothing is ever parsed to `float`/`double`.
 
-| Method | Permission | Returns | Notes |
+| Method | Interface | Returns | Notes |
 |---|---|---|---|
-| `ping()` | `admin` | `PingResult` | Liveness; `isOk()` |
-| `getCredits()` | `admin` | `Credits` | Balance; `getCredits()`, `asDecimal()` |
-| `getHost()` | `admin` | `HostName` | Serving host name |
-| `getSmsCost(dstaddr)` / `getSmsCost(dstaddr, message)` | `sms` | `Cost` | Price without sending |
-| `sendSms(dstaddr, message)` / `sendSms(dstaddr, message, options)` | `sms` | `SendResult` | Extra fields pass through |
-| `querySmsStatus(msgid)` | `sms` | `SmsStatus` | Delivery state; `isFinal()` |
-| `lookupHlr(msisdn)` | `hlr` | `HlrResult` | Costs a credit |
-| `lookupMnp(msisdn)` | `hlr` | `MnpResult` | Porting status |
-| `getNumberInfo(msisdn)` | `hlr` | `NumberInfo` | Country / network |
-| `createGroup(name)` | `groups` | `CreateGroupResult` | Returns `grpid` |
-| `deleteGroup(grpid)` | `groups` | `DeleteResult` | |
-| `addGroupEntry(grpid, number)` / `addGroupEntry(grpid, number, options)` | `groups` | `AddEntriesResult` | |
-| `deleteGroupEntry(grpid, number)` | `groups` | `DeleteResult` | |
-| `addGroupEntries(grpid, List<String>)` / `addGroupEntries(grpid, String...)` | `groups` | `AddEntriesResult` | Sent one per line |
-| `getGroupNumbers(grpid)` | `groups` | `GroupNumbers` | `getNumbers()` |
-| `getGroupDetails(grpid)` | `groups` | `GroupDetails` | With per-number status |
-| `listGroups()` | `groups` | `GroupList` | `getGroups()` |
-| `deleteGroupContents(grpid)` | `groups` | `DeleteResult` | Keeps the group |
-| `getGroupCost(grpid)` / `getGroupCost(grpid, message)` | **`sms`** | `GroupCost` | Prices a send, not a group edit |
-| `sendGroupSms(grpid, message)` / `sendGroupSms(grpid, message, options)` | **`sms`** | `SendResult` | |
+| `ping()` | `http` | `PingResult` | Liveness; `isOk()` |
+| `getCredits()` | `http` | `Credits` | Balance; `getCredits()`, `asDecimal()` |
+| `getHost()` | `http` | `HostName` | Serving host name |
+| `getSmsCost(dstaddr)` / `getSmsCost(dstaddr, message)` | `http` | `Cost` | Price without sending |
+| `sendSms(dstaddr, message)` / `sendSms(dstaddr, message, options)` | `http` | `SendResult` | Extra fields pass through |
+| `querySmsStatus(msgid)` | `http` | `SmsStatus` | Delivery state; `isFinal()` |
+| `lookupHlr(msisdn)` | `http` | `HlrResult` | Costs a credit |
+| `lookupMnp(msisdn)` | `http` | `MnpResult` | Porting status |
+| `getNumberInfo(msisdn)` | `http` | `NumberInfo` | Country / network |
+| `createGroup(name)` | `http` | `CreateGroupResult` | Returns `grpid` |
+| `deleteGroup(grpid)` | `http` | `DeleteResult` | |
+| `addGroupEntry(grpid, number)` / `addGroupEntry(grpid, number, options)` | `http` | `AddEntriesResult` | |
+| `deleteGroupEntry(grpid, number)` | `http` | `DeleteResult` | |
+| `addGroupEntries(grpid, List<String>)` / `addGroupEntries(grpid, String...)` | `http` | `AddEntriesResult` | Sent one per line |
+| `getGroupNumbers(grpid)` | `http` | `GroupNumbers` | `getNumbers()` |
+| `getGroupDetails(grpid)` | `http` | `GroupDetails` | With per-number status |
+| `listGroups()` | `http` | `GroupList` | `getGroups()` |
+| `deleteGroupContents(grpid)` | `http` | `DeleteResult` | Keeps the group |
+| `getGroupCost(grpid)` / `getGroupCost(grpid, message)` | `http` | `GroupCost` | Prices a send, not a group edit |
+| `sendGroupSms(grpid, message)` / `sendGroupSms(grpid, message, options)` | `http` | `SendResult` | |
 
-`getGroupCost` and `sendGroupSms` need `sms`, not `groups`. That is the
-gateway's actual behaviour, not a documentation slip.
 
 `options` maps (`Map<String, String>`) are passed through unchanged, so optional
 fields (`sendid`, `schedule`, `sender`, `udh`) work without the client having to

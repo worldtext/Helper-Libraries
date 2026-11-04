@@ -28,26 +28,26 @@ public sealed class ErrorTests : MockTestBase
     }
 
     [Fact]
-    public async Task Wrong_scope_is_403_with_the_required_scope_exposed()
+    public async Task Wrong_interface_is_403_with_the_required_scope_exposed()
     {
-        using var client = Client("test-sms");
+        using var client = Client("test-email");
 
         var error = await Assert.ThrowsAsync<PermissionException>(() => client.GetCreditsAsync());
 
         Assert.Equal(403, error.HttpStatus);
-        // The required scope is surfaced so the caller can say which one to add.
-        Assert.Equal("admin", error.RequiredScope);
+        // The required interface is surfaced so the caller can say which one to add.
+        Assert.Equal("http", error.RequiredScope);
         Assert.Equal("1000", error.ErrorCode);
     }
 
     [Fact]
-    public async Task Group_cost_with_a_groups_token_reports_the_sms_scope()
+    public async Task Group_cost_with_an_email_credential_reports_the_http_scope()
     {
-        using var client = Client("test-groups");
+        using var client = Client("test-email");
 
         var error = await Assert.ThrowsAsync<PermissionException>(() => client.GetGroupCostAsync("4242"));
 
-        Assert.Equal("sms", error.RequiredScope);
+        Assert.Equal("http", error.RequiredScope);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class ErrorTests : MockTestBase
     [Fact]
     public async Task Create_group_without_a_name_is_400()
     {
-        using var client = Client("test-groups");
+        using var client = Client("test-http");
 
         var error = await Assert.ThrowsAsync<ApiException>(() => client.CreateGroupAsync(string.Empty));
 
@@ -77,7 +77,7 @@ public sealed class ErrorTests : MockTestBase
     public async Task All_errors_share_a_base_class_and_are_distinguishable_by_type()
     {
         using var unknown = Client("nope");
-        using var wrongScope = Client("test-sms");
+        using var wrongScope = Client("test-email");
 
         var unauthorized = await Assert.ThrowsAnyAsync<WorldTextException>(() => unknown.GetCreditsAsync());
         var forbidden = await Assert.ThrowsAnyAsync<WorldTextException>(() => wrongScope.GetCreditsAsync());

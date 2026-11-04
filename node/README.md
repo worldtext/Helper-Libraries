@@ -40,11 +40,10 @@ try { await wt.ping(); } catch (e) { console.log(e.name, e.message); }
 Bearer tokens only — every request sends `Authorization: Bearer <token>`. There
 is no query-string `id`/`key` support; that form is not part of API 3.0.
 
-A token carries one or more of four independent permissions: `sms`, `groups`,
-`admin`, `hlr`. Calling an operation outside its permissions rejects with
-`PermissionError`, whose `requiredScope` tells you what was missing. If you
-declare the token's permissions up front, the client refuses impossible calls
-before spending a request on them:
+A token names the interfaces it may be used on: `http`, `email` or `bulk`. It is
+not a list of operations: a credential carrying `http` can use this whole API
+and can send messages, because that is what a token is issued for. A call from
+an interface the token does not carry raises `PermissionError_`.
 
 ```js
 const wt = new WorldText({ token, permissions: ['sms', 'admin'] });
@@ -57,31 +56,29 @@ await wt.listGroups();                 // PermissionError, requiredScope: 'group
 All methods are `async` and resolve with a typed model (see `lib/models.js`).
 Extras after a `[options]` argument are passed through to the API untouched.
 
-| Method | Permission | Resolves with | Notes |
+| Method | Interface | Resolves with | Notes |
 |---|---|---|---|
-| `ping()` | `admin` | `PingResult` | Liveness (`.ok`) |
-| `getCredits()` | `admin` | `Credits` | Balance |
-| `getHost()` | `admin` | `HostName` | Serving host name |
-| `getSmsCost(dstaddr, message?)` | `sms` | `Credits` | Price without sending |
-| `sendSms(dstaddr, message, [options])` | `sms` | `SendResult` | Extra fields pass through |
-| `querySmsStatus(msgid)` | `sms` | `SmsStatus` | Delivery state (`.final`) |
-| `lookupHlr(msisdn)` | `hlr` | `HlrResult` | Costs a credit |
-| `lookupMnp(msisdn)` | `hlr` | `MnpResult` | Porting status |
-| `getNumberInfo(msisdn)` | `hlr` | `NumberInfo` | Country / network |
-| `createGroup(name)` | `groups` | `CreateGroupResult` | Returns `.grpid` |
-| `deleteGroup(grpid)` | `groups` | `DeleteResult` | |
-| `addGroupEntry(grpid, number, [options])` | `groups` | `AddEntriesResult` | |
-| `deleteGroupEntry(grpid, number)` | `groups` | `DeleteResult` | |
-| `addGroupEntries(grpid, numbers)` | `groups` | `AddEntriesResult` | Any iterable of numbers |
-| `getGroupNumbers(grpid)` | `groups` | `GroupNumbers` | |
-| `getGroupDetails(grpid)` | `groups` | `GroupDetails` | With per-number status |
-| `listGroups()` | `groups` | `GroupList` | `.groups` |
-| `deleteGroupContents(grpid)` | `groups` | `DeleteResult` | Keeps the group |
-| `getGroupCost(grpid, message?)` | **`sms`** | `GroupCost` | Prices a send, not a group edit |
-| `sendGroupSms(grpid, message, [options])` | **`sms`** | `SendResult` | |
+| `ping()` | `http` | `PingResult` | Liveness (`.ok`) |
+| `getCredits()` | `http` | `Credits` | Balance |
+| `getHost()` | `http` | `HostName` | Serving host name |
+| `getSmsCost(dstaddr, message?)` | `http` | `Credits` | Price without sending |
+| `sendSms(dstaddr, message, [options])` | `http` | `SendResult` | Extra fields pass through |
+| `querySmsStatus(msgid)` | `http` | `SmsStatus` | Delivery state (`.final`) |
+| `lookupHlr(msisdn)` | `http` | `HlrResult` | Costs a credit |
+| `lookupMnp(msisdn)` | `http` | `MnpResult` | Porting status |
+| `getNumberInfo(msisdn)` | `http` | `NumberInfo` | Country / network |
+| `createGroup(name)` | `http` | `CreateGroupResult` | Returns `.grpid` |
+| `deleteGroup(grpid)` | `http` | `DeleteResult` | |
+| `addGroupEntry(grpid, number, [options])` | `http` | `AddEntriesResult` | |
+| `deleteGroupEntry(grpid, number)` | `http` | `DeleteResult` | |
+| `addGroupEntries(grpid, numbers)` | `http` | `AddEntriesResult` | Any iterable of numbers |
+| `getGroupNumbers(grpid)` | `http` | `GroupNumbers` | |
+| `getGroupDetails(grpid)` | `http` | `GroupDetails` | With per-number status |
+| `listGroups()` | `http` | `GroupList` | `.groups` |
+| `deleteGroupContents(grpid)` | `http` | `DeleteResult` | Keeps the group |
+| `getGroupCost(grpid, message?)` | `http` | `GroupCost` | Prices a send, not a group edit |
+| `sendGroupSms(grpid, message, [options])` | `http` | `SendResult` | |
 
-`getGroupCost` and `sendGroupSms` need `sms`, not `groups`. That is the
-gateway's actual behaviour, not a documentation slip.
 
 Write routes accept `PUT` and `POST` interchangeably; the client sends `PUT`
 with a form-encoded body (and a `Content-Length`) for writes and query

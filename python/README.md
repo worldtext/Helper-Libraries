@@ -30,37 +30,36 @@ Bearer tokens only. Create a token in the admin console or customer portal,
 ticking the permissions it needs. There is no query-string `id`/`key` support —
 that form is not part of API 3.0.
 
-A token carries one or more of four independent permissions: `sms`, `groups`,
-`admin`, `hlr`. Calling an operation outside its permissions raises
-`PermissionError_`, with `required_scope` telling you what was missing.
+A token names the interfaces it may be used on: `http`, `email` or `bulk`. It is
+not a list of operations: a credential carrying `http` can use this whole API
+and can send messages, because that is what a token is issued for. A call from
+an interface the token does not carry raises `PermissionError_`.
 
 ## Methods
 
-| Method | Permission | Notes |
+| Method | Interface | Notes |
 |---|---|---|
-| `ping()` | `admin` | Liveness |
-| `get_credits()` | `admin` | Balance |
-| `get_host()` | `admin` | Serving host name |
-| `get_sms_cost(dstaddr, message="")` | `sms` | Price without sending |
-| `send_sms(dstaddr, message, **options)` | `sms` | Extra fields pass through |
-| `query_sms_status(msgid)` | `sms` | Delivery state |
-| `lookup_hlr(msisdn)` | `hlr` | Costs a credit |
-| `lookup_mnp(msisdn)` | `hlr` | Porting status |
-| `get_number_info(msisdn)` | `hlr` | Country / network |
-| `create_group(name)` | `groups` | Returns `grpid` |
-| `delete_group(grpid)` | `groups` | |
-| `add_group_entry(grpid, number)` | `groups` | |
-| `delete_group_entry(grpid, number)` | `groups` | |
-| `add_group_entries(grpid, numbers)` | `groups` | List of numbers |
-| `get_group_numbers(grpid)` | `groups` | |
-| `get_group_details(grpid)` | `groups` | With per-number status |
-| `list_groups()` | `groups` | `.groups` |
-| `delete_group_contents(grpid)` | `groups` | Keeps the group |
-| `get_group_cost(grpid, message="")` | **`sms`** | Prices a send, not a group edit |
-| `send_group_sms(grpid, message, **options)` | **`sms`** | |
+| `ping()` | `http` | Liveness |
+| `get_credits()` | `http` | Balance |
+| `get_host()` | `http` | Serving host name |
+| `get_sms_cost(dstaddr, message="")` | `http` | Price without sending |
+| `send_sms(dstaddr, message, **options)` | `http` | Extra fields pass through |
+| `query_sms_status(msgid)` | `http` | Delivery state |
+| `lookup_hlr(msisdn)` | `http` | Costs a credit |
+| `lookup_mnp(msisdn)` | `http` | Porting status |
+| `get_number_info(msisdn)` | `http` | Country / network |
+| `create_group(name)` | `http` | Returns `grpid` |
+| `delete_group(grpid)` | `http` | |
+| `add_group_entry(grpid, number)` | `http` | |
+| `delete_group_entry(grpid, number)` | `http` | |
+| `add_group_entries(grpid, numbers)` | `http` | List of numbers |
+| `get_group_numbers(grpid)` | `http` | |
+| `get_group_details(grpid)` | `http` | With per-number status |
+| `list_groups()` | `http` | `.groups` |
+| `delete_group_contents(grpid)` | `http` | Keeps the group |
+| `get_group_cost(grpid, message="")` | `http` | Prices a send, not a group edit |
+| `send_group_sms(grpid, message, **options)` | `http` | |
 
-`get_group_cost` and `send_group_sms` need `sms`, not `groups`. That is the
-gateway's actual behaviour, not a documentation slip.
 
 ## Numbers are strings
 

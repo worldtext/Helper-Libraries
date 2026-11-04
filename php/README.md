@@ -41,44 +41,36 @@ Bearer tokens only: every request carries `Authorization: Bearer <token>`.
 API 3.0 has no query-string `id`/`key` scheme and this client does not
 implement one.
 
-A token carries one or more of four independent permissions: `sms`, `groups`,
-`admin`, `hlr`. Calling an operation outside its permissions throws
-`PermissionException`, whose `getRequiredScope()` says what was missing.
-
-| Token permission | Operations |
-|---|---|
-| `admin` | `ping`, `getCredits`, `getHost` |
-| `sms` | `getSmsCost`, `sendSms`, `querySmsStatus`, `getGroupCost`, `sendGroupSms` |
-| `groups` | `createGroup`, `deleteGroup`, `addGroupEntry`, `deleteGroupEntry`, `addGroupEntries`, `getGroupNumbers`, `getGroupDetails`, `listGroups`, `deleteGroupContents` |
-| `hlr` | `lookupHlr`, `lookupMnp`, `getNumberInfo` |
+A token names the interfaces it may be used on: `http`, `email` or `bulk`. It is
+not a list of operations: a credential carrying `http` can use this whole API
+and can send messages, because that is what a token is issued for. A call from
+an interface the token does not carry raises `PermissionError_`.
 
 ## Methods
 
-| Method | Permission | Returns | Notes |
+| Method | Interface | Returns | Notes |
 |---|---|---|---|
-| `ping()` | `admin` | `PingResult` | `->ok` |
-| `getCredits()` | `admin` | `Credits` | `->credits` is a string |
-| `getHost()` | `admin` | `HostName` | `->hostname` |
-| `getSmsCost($dstaddr, $message = '')` | `sms` | `Cost` | Price without sending |
-| `sendSms($dstaddr, $message, $options = [])` | `sms` | `SendResult` | Extra fields pass through |
-| `querySmsStatus($msgid)` | `sms` | `SmsStatus` | `->isFinal()` |
-| `lookupHlr($msisdn)` | `hlr` | `HlrResult` | Costs a credit |
-| `lookupMnp($msisdn)` | `hlr` | `MnpResult` | `->isPorted()` |
-| `getNumberInfo($msisdn)` | `hlr` | `NumberInfo` | Country / network |
-| `createGroup($name)` | `groups` | `CreateGroupResult` | `->grpid` |
-| `deleteGroup($grpid)` | `groups` | `DeleteResult` | |
-| `addGroupEntry($grpid, $number, $options = [])` | `groups` | `AddEntriesResult` | |
-| `deleteGroupEntry($grpid, $number)` | `groups` | `DeleteResult` | |
-| `addGroupEntries($grpid, array $numbers)` | `groups` | `AddEntriesResult` | List of numbers |
-| `getGroupNumbers($grpid)` | `groups` | `GroupNumbers` | `->numbers` |
-| `getGroupDetails($grpid)` | `groups` | `GroupDetails` | With per-number status |
-| `listGroups()` | `groups` | `GroupList` | `->groups` |
-| `deleteGroupContents($grpid)` | `groups` | `DeleteResult` | Keeps the group |
-| `getGroupCost($grpid, $message = '')` | **`sms`** | `GroupCost` | Prices a send, not a group edit |
-| `sendGroupSms($grpid, $message, $options = [])` | **`sms`** | `SendResult` | |
+| `ping()` | `http` | `PingResult` | `->ok` |
+| `getCredits()` | `http` | `Credits` | `->credits` is a string |
+| `getHost()` | `http` | `HostName` | `->hostname` |
+| `getSmsCost($dstaddr, $message = '')` | `http` | `Cost` | Price without sending |
+| `sendSms($dstaddr, $message, $options = [])` | `http` | `SendResult` | Extra fields pass through |
+| `querySmsStatus($msgid)` | `http` | `SmsStatus` | `->isFinal()` |
+| `lookupHlr($msisdn)` | `http` | `HlrResult` | Costs a credit |
+| `lookupMnp($msisdn)` | `http` | `MnpResult` | `->isPorted()` |
+| `getNumberInfo($msisdn)` | `http` | `NumberInfo` | Country / network |
+| `createGroup($name)` | `http` | `CreateGroupResult` | `->grpid` |
+| `deleteGroup($grpid)` | `http` | `DeleteResult` | |
+| `addGroupEntry($grpid, $number, $options = [])` | `http` | `AddEntriesResult` | |
+| `deleteGroupEntry($grpid, $number)` | `http` | `DeleteResult` | |
+| `addGroupEntries($grpid, array $numbers)` | `http` | `AddEntriesResult` | List of numbers |
+| `getGroupNumbers($grpid)` | `http` | `GroupNumbers` | `->numbers` |
+| `getGroupDetails($grpid)` | `http` | `GroupDetails` | With per-number status |
+| `listGroups()` | `http` | `GroupList` | `->groups` |
+| `deleteGroupContents($grpid)` | `http` | `DeleteResult` | Keeps the group |
+| `getGroupCost($grpid, $message = '')` | `http` | `GroupCost` | Prices a send, not a group edit |
+| `sendGroupSms($grpid, $message, $options = [])` | `http` | `SendResult` | |
 
-`getGroupCost` and `sendGroupSms` need `sms`, not `groups`. That is the
-gateway's actual behaviour, not a documentation slip.
 
 Write operations use `PUT`, deletes use `DELETE`; the gateway accepts `PUT` and
 `POST` interchangeably. `requestRaw($method, $path, $params)` reaches a route

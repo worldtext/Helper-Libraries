@@ -174,18 +174,19 @@ describe('successful calls and typed parsing', { skip }, () => {
     await assert.rejects(() => wt.addGroupEntries('4242', '447989000001'), TypeError);
   });
 
-  test('group cost and group send need sms, not groups', async () => {
-    // The spec says group/cost and group/send require sms; a groups token must be refused.
-    assert.equal((await client('test-sms').getGroupCost('4242')).credits, '2.0');
-    const sent = await client('test-sms').sendGroupSms('4242', 'hi');
+  test('a credential without the http interface is refused everywhere', async () => {
+    // Scopes name interfaces, so there is no per-operation boundary to test:
+    // an email-only credential is refused for reads and sends alike.
+    assert.equal((await client('test-http').getGroupCost('4242')).credits, '2.0');
+    const sent = await client('test-http').sendGroupSms('4242', 'hi');
     assert.equal(sent.msgid, '10002');
 
-    const wrongScope = await rejection(client('test-groups').getGroupCost('4242'), PermissionError);
-    assert.equal(wrongScope.requiredScope, 'sms');
-    await rejection(client('test-groups').sendGroupSms('4242', 'hi'), PermissionError);
-
-    // ...and a groups token is likewise not enough for a plain send.
-    await rejection(client('test-groups').sendSms('447989000001', 'hi'), PermissionError);
+    const wrongScope = await rejection(client('test-email').getGroupCost('4242'), PermissionError);
+    assert.equal(wrongScope.requiredScope, 'http');
+    await rejection(client('test-email').sendGroupSms('4242', 'hi'), PermissionError);
+    await rejection(client('test-email').sendSms('447989000001', 'hi'), PermissionError);
+    // A credential carrying no interfaces at all is refused too.
+    await rejection(client('test-none').sendSms('447989000001', 'hi'), PermissionError);
   });
 
   test('hlr lookups', async () => {
@@ -226,12 +227,12 @@ describe('typed errors', { skip }, () => {
     assert.match(error.message, /HTTP 401/);
   });
 
-  test('a wrong scope is 403 and exposes the required scope', async () => {
-    const error = await rejection(client('test-sms').getCredits(), PermissionError);
+  test('a wrong interface is 403 and exposes the required scope', async () => {
+    const error = await rejection(client('test-email').getCredits(), PermissionError);
     assert.equal(error.httpStatus, 403);
     assert.ok(error instanceof WorldTextError);
-    // The required scope is surfaced so the caller can say which one to add.
-    assert.equal(error.requiredScope, 'admin');
+    // The required interface is surfaced so the caller can say which one to add.
+    assert.equal(error.requiredScope, 'http');
     // ...and not confused with the gateway's 1000 code in the envelope.
     assert.equal(error.errorCode, '1000');
   });
@@ -253,10 +254,11 @@ describe('typed errors', { skip }, () => {
       ['hlr', (wt) => wt.lookupMnp('447989000001')],
       ['hlr', (wt) => wt.getNumberInfo('447989000001')],
     ];
-    for (const [scope, call] of cases) {
-      const token = { admin: 'test-sms', sms: 'test-groups', groups: 'test-hlr', hlr: 'test-admin' }[scope];
-      const error = await rejection(call(client(token)), PermissionError);
-      assert.equal(error.requiredScope, scope, `${call} should need ${scope}`);
+    // Every operation names the same interface: the vocabulary has no finer
+    // granularity, so this checks that all of them are gated at all.
+    for (const [, call] of cases) {
+      const error = await rejection(call(client('test-email')), PermissionError);
+      assert.equal(error.requiredScope, 'http', `${call} should need the http interface`);
     }
   });
 
@@ -270,7 +272,7 @@ describe('typed errors', { skip }, () => {
   });
 
   test('all errors share a base class', async () => {
-    for (const token of ['nope', 'test-sms']) {
+    for (const token of ['nope', 'test-email']) {
       const error = await rejection(client(token).getCredits(), WorldTextError);
       assert.equal(error instanceof WorldTextError, true);
       assert.equal(error.name, token === 'nope' ? 'AuthenticationError' : 'PermissionError');
@@ -281,13 +283,13 @@ describe('typed errors', { skip }, () => {
     /** Mimic a caller's error handler. */
     const handle = (error) => {
       if (error instanceof AuthenticationError) return 'renew-token';
-      if (error instanceof PermissionError) return `add-scope:${error.requiredScope}`;
+      if (error instanceof PermissionError) return `add-interface:${error.requiredScope}`;
       if (error.retryable) return 'retry';
       return 'fail';
     };
 
     assert.equal(handle(await rejection(client('nope').getCredits())), 'renew-token');
-    assert.equal(handle(await rejection(client('test-sms').getCredits())), 'add-scope:admin');
+    assert.equal(handle(await rejection(client('test-email').getCredits())), 'add-interface:http');
     assert.equal(handle(await rejection(client('test-sms').getSmsCost(''))), 'fail');
   });
 
@@ -308,23 +310,25 @@ describe('typed errors', { skip }, () => {
     assert.equal(error.statusFlag, '1', 'defaults to permanent');
   });
 
-  test('constructor-side permission checks refuse before any request', async () => {
+  test('constructor-side interface checks refuse before any request', async () => {
     let requests = 0;
-    const wt = client('test-groups', { permissions: ['groups'] });
+    const wt = client('test-email', { permissions: ['email'] });
     wt.events.addEventListener('request', () => { requests += 1; });
 
     const error = await rejection(wt.getCredits(), PermissionError);
-    assert.equal(error.requiredScope, 'admin');
+    assert.equal(error.requiredScope, 'http');
     assert.equal(error.httpStatus, 403);
     assert.equal(error.desc, 'insufficient_scope');
     assert.equal(requests, 0, 'no request should have been sent');
 
-    // Declaring the permission lets the call through. This token really does
-    // have `sms`, so the gateway lets the group cost through too.
-    const declared = client('test-sms', { permissions: ['sms'] });
+    // Declaring the interface lets the call through.
+    const declared = client('test-http', { permissions: ['http'] });
     assert.equal((await declared.getGroupCost('4242')).credits, '2.0');
-    // ...and a declared permission is not a bypass: the gateway still decides.
-    await rejection(declared.getCredits(), PermissionError);
+    // ...and declaring it is not a bypass. This credential claims `http` but the
+    // gateway knows it carries only `email`, so the refusal is the server's.
+    const lying = client('test-email', { permissions: ['http'] });
+    const remote = await rejection(lying.getGroupCost('4242'), PermissionError);
+    assert.equal(remote.requiredScope, 'http');
   });
 
   test('constructor validation', () => {

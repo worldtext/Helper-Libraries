@@ -341,16 +341,16 @@ public final class TestRunner {
 
     static void testClientGroupCostNeedsSmsNotGroups() throws IOException {
         // The spec says group/cost requires sms; a groups token must be refused.
-        GroupCost cost = client("test-sms").getGroupCost("4242");
+        GroupCost cost = client("test-http").getGroupCost("4242");
         eq("2.0", cost.getCredits(), "group cost");
         eq("2", cost.getEntrycount(), "entry count");
         try {
-            client("test-groups").getGroupCost("4242");
+            client("test-email").getGroupCost("4242");
             fail("a groups-only token must not be able to price a group send");
         } catch (PermissionDeniedException expected) {
-            eq("sms", expected.getRequiredScope(), "required scope");
+            eq("http", expected.getRequiredScope(), "required scope");
         }
-        eq("10002", client("test-sms").sendGroupSms("4242", "hi").getMsgid(), "group send msgid");
+        eq("10002", client("test-http").sendGroupSms("4242", "hi").getMsgid(), "group send msgid");
     }
 
     // ================================================================= errors
@@ -369,21 +369,21 @@ public final class TestRunner {
 
     static void testClientWrongScopeIs403WithScope() throws IOException {
         try {
-            client("test-sms").getCredits();
+            client("test-email").getCredits();
             fail("expected PermissionDeniedException");
         } catch (PermissionDeniedException e) {
             eq(Integer.valueOf(403), e.getHttpStatus(), "httpStatus");
             // The required scope is surfaced so the caller can say which to add.
-            eq("admin", e.getRequiredScope(), "requiredScope");
-            isTrue(e.toString().contains("admin"), "toString shows the scope");
+            eq("http", e.getRequiredScope(), "requiredScope");
+            isTrue(e.toString().contains("http"), "toString shows the interface");
             isFalse(e.isRetryable(), "403 is not retryable");
         }
-        // And the reverse direction: an admin token cannot send SMS.
+        // And the reverse direction: an email credential cannot send SMS.
         try {
-            client("test-admin").sendSms("447989000001", "hi");
+            client("test-email").sendSms("447989000001", "hi");
             fail("expected PermissionDeniedException");
         } catch (PermissionDeniedException e) {
-            eq("sms", e.getRequiredScope(), "requiredScope");
+            eq("http", e.getRequiredScope(), "requiredScope");
         }
     }
 
@@ -406,7 +406,7 @@ public final class TestRunner {
             isTrue(e instanceof AuthenticationException, "authentication subtype");
         }
         try {
-            client("test-sms").getCredits();
+            client("test-email").getCredits();
             fail("expected WorldTextException");
         } catch (WorldTextException e) {
             isTrue(e instanceof PermissionDeniedException, "permission subtype");

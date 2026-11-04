@@ -58,41 +58,39 @@ Bearer tokens only: every request sends `Authorization: Bearer <token>`.
 API 3.0 has no query-string `id`/`key` authentication and this client does not
 implement one.
 
-A token carries one or more of four independent permissions: `sms`, `groups`,
-`admin`, `hlr`. Calling an operation outside its permissions returns a
-`*worldtext.PermissionError` whose `RequiredScope` names the permission that
-was missing.
+A token names the interfaces it may be used on: `http`, `email` or `bulk`. It is
+not a list of operations: a credential carrying `http` can use this whole API
+and can send messages, because that is what a token is issued for. A call from
+an interface the token does not carry raises `PermissionError`.
 
 ## Methods
 
 All methods take `ctx context.Context` first and return a typed result plus
 `error`.
 
-| Method | Permission | Notes |
+| Method | Interface | Notes |
 |---|---|---|
-| `Ping(ctx)` | `admin` | Liveness; `.OK` |
-| `GetCredits(ctx)` | `admin` | Balance in `.Credits` |
-| `GetHost(ctx)` | `admin` | Serving host name |
-| `GetSmsCost(ctx, dstAddr, message)` | `sms` | Price without sending |
-| `SendSms(ctx, dstAddr, message, opts)` | `sms` | Extra fields via `opts Params` |
-| `QuerySmsStatus(ctx, msgID)` | `sms` | `.State`, `.Final()` |
-| `LookupHLR(ctx, msisdn)` | `hlr` | Costs a credit |
-| `LookupMNP(ctx, msisdn)` | `hlr` | Porting status |
-| `GetNumberInfo(ctx, msisdn)` | `hlr` | Country / network |
-| `CreateGroup(ctx, name)` | `groups` | `.GroupID` |
-| `DeleteGroup(ctx, groupID)` | `groups` | |
-| `AddGroupEntry(ctx, groupID, number, opts)` | `groups` | |
-| `DeleteGroupEntry(ctx, groupID, number)` | `groups` | |
-| `AddGroupEntries(ctx, groupID, numbers)` | `groups` | `[]string`, joined one per line |
-| `GetGroupNumbers(ctx, groupID)` | `groups` | `.Numbers` |
-| `GetGroupDetails(ctx, groupID)` | `groups` | With per-number status |
-| `ListGroups(ctx)` | `groups` | `.Groups` |
-| `DeleteGroupContents(ctx, groupID)` | `groups` | Keeps the group |
-| `GetGroupCost(ctx, groupID, message)` | **`sms`** | Prices a send, not a group edit |
-| `SendGroupSms(ctx, groupID, message, opts)` | **`sms`** | |
+| `Ping(ctx)` | `http` | Liveness; `.OK` |
+| `GetCredits(ctx)` | `http` | Balance in `.Credits` |
+| `GetHost(ctx)` | `http` | Serving host name |
+| `GetSmsCost(ctx, dstAddr, message)` | `http` | Price without sending |
+| `SendSms(ctx, dstAddr, message, opts)` | `http` | Extra fields via `opts Params` |
+| `QuerySmsStatus(ctx, msgID)` | `http` | `.State`, `.Final()` |
+| `LookupHLR(ctx, msisdn)` | `http` | Costs a credit |
+| `LookupMNP(ctx, msisdn)` | `http` | Porting status |
+| `GetNumberInfo(ctx, msisdn)` | `http` | Country / network |
+| `CreateGroup(ctx, name)` | `http` | `.GroupID` |
+| `DeleteGroup(ctx, groupID)` | `http` | |
+| `AddGroupEntry(ctx, groupID, number, opts)` | `http` | |
+| `DeleteGroupEntry(ctx, groupID, number)` | `http` | |
+| `AddGroupEntries(ctx, groupID, numbers)` | `http` | `[]string`, joined one per line |
+| `GetGroupNumbers(ctx, groupID)` | `http` | `.Numbers` |
+| `GetGroupDetails(ctx, groupID)` | `http` | With per-number status |
+| `ListGroups(ctx)` | `http` | `.Groups` |
+| `DeleteGroupContents(ctx, groupID)` | `http` | Keeps the group |
+| `GetGroupCost(ctx, groupID, message)` | `http` | Prices a send, not a group edit |
+| `SendGroupSms(ctx, groupID, message, opts)` | `http` | |
 
-`GetGroupCost` and `SendGroupSms` need `sms`, not `groups`. That is the
-gateway's actual behaviour, not a documentation slip.
 
 `opts` is a `worldtext.Params` (`map[string]string`) that is passed through
 unchanged, so optional fields such as `sendid`, `schedule`, `sender` and `udh`
@@ -216,5 +214,4 @@ different directory.
 
 16 tests cover typed parsing, every operation group, the 401/403/400 taxonomy
 (including the exposed required scope), retryability, token redaction in
-`String()`/errors/logs, and the group routes that need `sms` rather than
-`groups`.
+`String()`/errors/logs.

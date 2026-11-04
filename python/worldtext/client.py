@@ -126,19 +126,19 @@ class WorldText(object):
         return models.Credits(self._request("GET", "/admin/credits"))
 
     def get_host(self):
-        """Name of the host that served the request. Requires ``admin``."""
+        """Name of the host that served the request. Requires ``http``."""
         return models.HostName(self._request("GET", "/admin/host"))
 
     # ------------------------------------------------------------------- sms
 
     def get_sms_cost(self, dstaddr, message=""):
-        """Cost of a single message without sending it. Requires ``sms``."""
+        """Cost of a single message without sending it. Requires ``http``."""
         return models.Cost(
             self._request("GET", "/sms/cost", {"dstaddr": dstaddr, "message": message})
         )
 
     def send_sms(self, dstaddr, message, **options):
-        """Send to one destination. Requires ``sms``.
+        """Send to one destination. Requires ``http``.
 
         ``options`` are passed through, so optional fields (``sendid``,
         ``schedule``, ``sender``, ``udh``) work without this client needing to
@@ -149,47 +149,47 @@ class WorldText(object):
         return models.SendResult(self._request("PUT", "/sms/send", params))
 
     def query_sms_status(self, msgid):
-        """Delivery state of a sent message. Requires ``sms``."""
+        """Delivery state of a sent message. Requires ``http``."""
         return models.SmsStatus(self._request("GET", "/sms/query", {"msgid": msgid}))
 
     # ------------------------------------------------------------------- hlr
 
     def lookup_hlr(self, msisdn):
-        """HLR lookup. Requires ``hlr``. Costs a credit."""
+        """HLR lookup. Requires ``http``. Costs a credit."""
         return models.HlrResult(self._request("GET", "/hlr/lookup", {"msisdn": msisdn}))
 
     def lookup_mnp(self, msisdn):
-        """Mobile number portability. Requires ``hlr``."""
+        """Mobile number portability. Requires ``http``."""
         return models.MnpResult(self._request("GET", "/hlr/mnp", {"msisdn": msisdn}))
 
     def get_number_info(self, msisdn):
-        """Country and network for a number. Requires ``hlr``."""
+        """Country and network for a number. Requires ``http``."""
         return models.NumberInfo(self._request("GET", "/hlr/info", {"msisdn": msisdn}))
 
     # ---------------------------------------------------------------- groups
 
     def create_group(self, name):
-        """Create a group. Requires ``groups``."""
+        """Create a group. Requires ``http``."""
         return models.CreateGroupResult(self._request("PUT", "/group/create", {"name": name}))
 
     def delete_group(self, grpid):
-        """Delete a group and its contents. Requires ``groups``."""
+        """Delete a group and its contents. Requires ``http``."""
         return models.DeleteResult(self._request("DELETE", "/group/destroy", {"grpid": grpid}))
 
     def add_group_entry(self, grpid, number, **options):
-        """Add one number to a group. Requires ``groups``."""
+        """Add one number to a group. Requires ``http``."""
         params = {"grpid": grpid, "number": number}
         params.update(options)
         return models.AddEntriesResult(self._request("PUT", "/group/entry", params))
 
     def delete_group_entry(self, grpid, number):
-        """Remove one number. Requires ``groups``."""
+        """Remove one number. Requires ``http``."""
         return models.DeleteResult(
             self._request("DELETE", "/group/entry", {"grpid": grpid, "number": number})
         )
 
     def add_group_entries(self, grpid, numbers):
-        """Add several numbers, one per line, as the API expects. Requires ``groups``."""
+        """Add several numbers, one per line, as the API expects. Requires ``http``."""
         if not isinstance(numbers, (list, tuple)):
             raise TypeError("numbers must be a list or tuple")
         return models.AddEntriesResult(
@@ -197,15 +197,15 @@ class WorldText(object):
         )
 
     def get_group_numbers(self, grpid):
-        """Numbers in a group. Requires ``groups``."""
+        """Numbers in a group. Requires ``http``."""
         return models.GroupNumbers(self._request("GET", "/group/numbers", {"grpid": grpid}))
 
     def get_group_details(self, grpid):
-        """Numbers in a group with their status. Requires ``groups``."""
+        """Numbers in a group with their status. Requires ``http``."""
         return models.GroupDetails(self._request("GET", "/group/details", {"grpid": grpid}))
 
     def list_groups(self):
-        """All groups on the account. Requires ``groups``."""
+        """All groups on the account. Requires ``http``."""
         raw = self._request("GET", "/group/list")
         items = raw.get("group") or []
         if isinstance(items, dict):
@@ -215,26 +215,26 @@ class WorldText(object):
         return result
 
     def delete_group_contents(self, grpid):
-        """Remove every number from a group, keeping the group. Requires ``groups``."""
+        """Remove every number from a group, keeping the group. Requires ``http``."""
         return models.DeleteResult(
             self._request("DELETE", "/group/contents", {"grpid": grpid})
         )
 
     def get_group_cost(self, grpid, message=""):
-        """Cost of sending to a whole group. Requires ``sms``, not ``groups``."""
+        """Cost of sending to a whole group. Requires ``http``, not ``groups``."""
         return models.GroupCost(
             self._request("GET", "/group/cost", {"grpid": grpid, "message": message})
         )
 
     def send_group_sms(self, grpid, message, **options):
-        """Send to every number in a group. Requires ``sms``."""
+        """Send to every number in a group. Requires ``http``."""
         params = {"grpid": grpid, "message": message}
         params.update(options)
         return models.SendResult(self._request("PUT", "/group/send", params))
 
 
 def _scope_from_header(header):
-    """Pull ``scope="sms"`` out of a WWW-Authenticate header, if present."""
+    """Pull ``scope="http"`` out of a WWW-Authenticate header, if present."""
     if not header:
         return None
     for part in header.split(","):

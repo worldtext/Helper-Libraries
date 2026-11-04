@@ -20,7 +20,7 @@ public class PermissionDeniedException extends WorldTextException {
         this.requiredScope = requiredScope;
     }
 
-    /** The permission this operation needs, e.g. {@code "sms"}, or null if unknown. */
+    /** The permission this operation needs, e.g. {@code "http"}, or null if unknown. */
     public String getRequiredScope() {
         return requiredScope;
     }

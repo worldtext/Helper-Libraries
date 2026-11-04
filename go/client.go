@@ -259,9 +259,9 @@ func scrub(err error, token string) {
 	}
 }
 
-// scopeFromHeader pulls scope="sms" out of a WWW-Authenticate header:
+// scopeFromHeader pulls scope="http" out of a WWW-Authenticate header:
 //
-//	Bearer error="insufficient_scope", scope="admin"
+//	Bearer error="insufficient_scope", scope="http"
 func scopeFromHeader(header string) string {
 	if header == "" {
 		return ""
@@ -277,7 +277,7 @@ func scopeFromHeader(header string) string {
 
 // ---------------------------------------------------------------- admin API
 
-// Ping is a liveness check. It needs the "admin" permission.
+// Ping is a liveness check. It needs the "http" permission.
 func (c *Client) Ping(ctx context.Context) (*PingResult, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/admin/ping", nil)
 	if err != nil {
@@ -286,7 +286,7 @@ func (c *Client) Ping(ctx context.Context) (*PingResult, error) {
 	return newPingResult(raw), nil
 }
 
-// GetCredits returns the account's credit balance. It needs "admin".
+// GetCredits returns the account's credit balance. It needs "http".
 func (c *Client) GetCredits(ctx context.Context) (*Credits, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/admin/credits", nil)
 	if err != nil {
@@ -296,7 +296,7 @@ func (c *Client) GetCredits(ctx context.Context) (*Credits, error) {
 }
 
 // GetHost returns the name of the host that served the request. It needs
-// "admin".
+// "http".
 func (c *Client) GetHost(ctx context.Context) (*HostName, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/admin/host", nil)
 	if err != nil {
@@ -308,7 +308,7 @@ func (c *Client) GetHost(ctx context.Context) (*HostName, error) {
 // ------------------------------------------------------------------ SMS API
 
 // GetSmsCost returns the price of one message without sending it. It needs
-// "sms". An empty message prices a default-length message.
+// "http". An empty message prices a default-length message.
 func (c *Client) GetSmsCost(ctx context.Context, dstAddr, message string) (*Cost, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/sms/cost", Params{"dstaddr": dstAddr, "message": message})
 	if err != nil {
@@ -317,7 +317,7 @@ func (c *Client) GetSmsCost(ctx context.Context, dstAddr, message string) (*Cost
 	return newCost(raw), nil
 }
 
-// SendSms sends one message to one destination. It needs "sms". Extra fields
+// SendSms sends one message to one destination. It needs "http". Extra fields
 // such as "sendid", "schedule", "sender" and "udh" go in opts.
 func (c *Client) SendSms(ctx context.Context, dstAddr, message string, opts Params) (*SendResult, error) {
 	raw, err := c.do(ctx, http.MethodPut, "/sms/send",
@@ -329,7 +329,7 @@ func (c *Client) SendSms(ctx context.Context, dstAddr, message string, opts Para
 }
 
 // QuerySmsStatus returns the delivery state of a sent message. It needs
-// "sms".
+// "http".
 func (c *Client) QuerySmsStatus(ctx context.Context, msgID string) (*SmsStatus, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/sms/query", Params{"msgid": msgID})
 	if err != nil {
@@ -340,7 +340,7 @@ func (c *Client) QuerySmsStatus(ctx context.Context, msgID string) (*SmsStatus, 
 
 // ------------------------------------------------------------------ HLR API
 
-// LookupHLR performs an HLR lookup. It needs "hlr" and costs a credit.
+// LookupHLR performs an HLR lookup. It needs "http" and costs a credit.
 func (c *Client) LookupHLR(ctx context.Context, msisdn string) (*HLRResult, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/hlr/lookup", Params{"msisdn": msisdn})
 	if err != nil {
@@ -349,7 +349,7 @@ func (c *Client) LookupHLR(ctx context.Context, msisdn string) (*HLRResult, erro
 	return newHLRResult(raw), nil
 }
 
-// LookupMNP returns the mobile number portability status. It needs "hlr".
+// LookupMNP returns the mobile number portability status. It needs "http".
 func (c *Client) LookupMNP(ctx context.Context, msisdn string) (*MNPResult, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/hlr/mnp", Params{"msisdn": msisdn})
 	if err != nil {
@@ -359,7 +359,7 @@ func (c *Client) LookupMNP(ctx context.Context, msisdn string) (*MNPResult, erro
 }
 
 // GetNumberInfo returns the country and network for a number. It needs
-// "hlr".
+// "http".
 func (c *Client) GetNumberInfo(ctx context.Context, msisdn string) (*NumberInfo, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/hlr/info", Params{"msisdn": msisdn})
 	if err != nil {
@@ -370,7 +370,7 @@ func (c *Client) GetNumberInfo(ctx context.Context, msisdn string) (*NumberInfo,
 
 // --------------------------------------------------------------- group API
 
-// CreateGroup creates a group. It needs "groups".
+// CreateGroup creates a group. It needs "http".
 func (c *Client) CreateGroup(ctx context.Context, name string) (*CreateGroupResult, error) {
 	raw, err := c.do(ctx, http.MethodPut, "/group/create", Params{"name": name})
 	if err != nil {
@@ -379,7 +379,7 @@ func (c *Client) CreateGroup(ctx context.Context, name string) (*CreateGroupResu
 	return newCreateGroupResult(raw), nil
 }
 
-// DeleteGroup deletes a group and its contents. It needs "groups".
+// DeleteGroup deletes a group and its contents. It needs "http".
 func (c *Client) DeleteGroup(ctx context.Context, groupID string) (*DeleteResult, error) {
 	raw, err := c.do(ctx, http.MethodDelete, "/group/destroy", Params{"grpid": groupID})
 	if err != nil {
@@ -388,7 +388,7 @@ func (c *Client) DeleteGroup(ctx context.Context, groupID string) (*DeleteResult
 	return newDeleteResult(raw), nil
 }
 
-// AddGroupEntry adds one number to a group. It needs "groups". Extra fields
+// AddGroupEntry adds one number to a group. It needs "http". Extra fields
 // go in opts.
 func (c *Client) AddGroupEntry(ctx context.Context, groupID, number string, opts Params) (*AddEntriesResult, error) {
 	raw, err := c.do(ctx, http.MethodPut, "/group/entry",
@@ -399,7 +399,7 @@ func (c *Client) AddGroupEntry(ctx context.Context, groupID, number string, opts
 	return newAddEntriesResult(raw), nil
 }
 
-// DeleteGroupEntry removes one number from a group. It needs "groups".
+// DeleteGroupEntry removes one number from a group. It needs "http".
 func (c *Client) DeleteGroupEntry(ctx context.Context, groupID, number string) (*DeleteResult, error) {
 	raw, err := c.do(ctx, http.MethodDelete, "/group/entry",
 		Params{"grpid": groupID, "number": number})
@@ -410,7 +410,7 @@ func (c *Client) DeleteGroupEntry(ctx context.Context, groupID, number string) (
 }
 
 // AddGroupEntries adds several numbers in one call, joined one per line as the
-// API expects. It needs "groups".
+// API expects. It needs "http".
 func (c *Client) AddGroupEntries(ctx context.Context, groupID string, numbers []string) (*AddEntriesResult, error) {
 	raw, err := c.do(ctx, http.MethodPut, "/group/entries",
 		Params{"grpid": groupID, "numbers": strings.Join(numbers, "\n")})
@@ -420,7 +420,7 @@ func (c *Client) AddGroupEntries(ctx context.Context, groupID string, numbers []
 	return newAddEntriesResult(raw), nil
 }
 
-// GetGroupNumbers lists the numbers in a group. It needs "groups".
+// GetGroupNumbers lists the numbers in a group. It needs "http".
 func (c *Client) GetGroupNumbers(ctx context.Context, groupID string) (*GroupNumbers, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/group/numbers", Params{"grpid": groupID})
 	if err != nil {
@@ -430,7 +430,7 @@ func (c *Client) GetGroupNumbers(ctx context.Context, groupID string) (*GroupNum
 }
 
 // GetGroupDetails lists a group's numbers with their status. It needs
-// "groups".
+// "http".
 func (c *Client) GetGroupDetails(ctx context.Context, groupID string) (*GroupDetails, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/group/details", Params{"grpid": groupID})
 	if err != nil {
@@ -440,7 +440,7 @@ func (c *Client) GetGroupDetails(ctx context.Context, groupID string) (*GroupDet
 }
 
 // ListGroups returns every group on the account in GroupNumbers.Groups. It
-// needs "groups".
+// needs "http".
 func (c *Client) ListGroups(ctx context.Context) (*GroupNumbers, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/group/list", nil)
 	if err != nil {
@@ -450,7 +450,7 @@ func (c *Client) ListGroups(ctx context.Context) (*GroupNumbers, error) {
 }
 
 // DeleteGroupContents removes every number from a group, keeping the group.
-// It needs "groups".
+// It needs "http".
 func (c *Client) DeleteGroupContents(ctx context.Context, groupID string) (*DeleteResult, error) {
 	raw, err := c.do(ctx, http.MethodDelete, "/group/contents", Params{"grpid": groupID})
 	if err != nil {
@@ -459,8 +459,8 @@ func (c *Client) DeleteGroupContents(ctx context.Context, groupID string) (*Dele
 	return newDeleteResult(raw), nil
 }
 
-// GetGroupCost returns the price of sending to a whole group. It needs "sms",
-// not "groups" - that is the gateway's behaviour, not a documentation slip.
+// GetGroupCost returns the price of sending to a whole group. It needs "http",
+// not "http" - that is the gateway's behaviour, not a documentation slip.
 func (c *Client) GetGroupCost(ctx context.Context, groupID, message string) (*GroupCost, error) {
 	raw, err := c.do(ctx, http.MethodGet, "/group/cost", Params{"grpid": groupID, "message": message})
 	if err != nil {
@@ -469,8 +469,8 @@ func (c *Client) GetGroupCost(ctx context.Context, groupID, message string) (*Gr
 	return newGroupCost(raw), nil
 }
 
-// SendGroupSms sends a message to every number in a group. It needs "sms",
-// not "groups".
+// SendGroupSms sends a message to every number in a group. It needs "http",
+// not "http".
 func (c *Client) SendGroupSms(ctx context.Context, groupID, message string, opts Params) (*SendResult, error) {
 	raw, err := c.do(ctx, http.MethodPut, "/group/send",
 		Params{"grpid": groupID, "message": message}.with(opts))

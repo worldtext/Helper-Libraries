@@ -77,13 +77,13 @@ export function redact(token) {
  * @example <caption>Fail fast when the token lacks a permission you need</caption>
  * import { WorldText, PermissionError } from 'world-text';
  *
- * const wt = new WorldText({ token, permissions: ['admin'] });
+ * const wt = new WorldText({ token, permissions: ['http'] });
  * try {
  *   await wt.getCredits();          // fine: admin
  *   await wt.sendSms('447989000001', 'hi');
  * } catch (error) {
- *   if (error instanceof PermissionError) console.error('add scope:', error.requiredScope);
- *   else throw error;               // PermissionError from sendSms says requiredScope: 'sms'
+ *   if (error instanceof PermissionError) console.error('add interface:', error.requiredScope);
+ *   else throw error;               // PermissionError from sendSms says requiredScope: 'http'
  * }
  *
  * Every method resolves with a typed model or rejects with a subclass of
@@ -109,8 +109,8 @@ export class WorldText {
    *   reference). Defaults to 30.
    * @param {AbortSignal|null} [options.signal]  Cancels this client's in-flight requests
    *   (e.g. on shutdown); they reject with a {@link TransportError}.
-   * @param {string[]|null} [options.permissions]  The permissions (`'sms'`, `'groups'`,
-   *   `'admin'`, `'hlr'`) this token was issued with. When given, the client
+   * @param {string[]|null} [options.permissions]  The interfaces (`'http'`, `'email'`,
+   *   `'bulk'`) this token was issued with. When given, the client
    *   refuses - client side, without a request - any operation outside them,
    *   throwing a {@link PermissionError} whose `requiredScope` names the missing one.
    */
@@ -341,7 +341,7 @@ export class WorldText {
    * @returns {Promise<models.PingResult>}  Requires the `admin` permission.
    */
   async ping() {
-    return new models.PingResult(await this.#request('GET', '/admin/ping', {}, 'admin'));
+    return new models.PingResult(await this.#request('GET', '/admin/ping', {}, 'http'));
   }
 
   /**
@@ -350,7 +350,7 @@ export class WorldText {
    *   `credits` is a string, e.g. `'2950'`.
    */
   async getCredits() {
-    return new models.Credits(await this.#request('GET', '/admin/credits', {}, 'admin'));
+    return new models.Credits(await this.#request('GET', '/admin/credits', {}, 'http'));
   }
 
   /**
@@ -358,7 +358,7 @@ export class WorldText {
    * @returns {Promise<models.HostName>}  Requires the `admin` permission.
    */
   async getHost() {
-    return new models.HostName(await this.#request('GET', '/admin/host', {}, 'admin'));
+    return new models.HostName(await this.#request('GET', '/admin/host', {}, 'http'));
   }
 
   // -------------------------------------------------------------------- sms
@@ -371,7 +371,7 @@ export class WorldText {
    */
   async getSmsCost(dstaddr, message = '') {
     return new models.Credits(
-      await this.#request('GET', '/sms/cost', { dstaddr, message }, 'sms'),
+      await this.#request('GET', '/sms/cost', { dstaddr, message }, 'http'),
     );
   }
 
@@ -387,7 +387,7 @@ export class WorldText {
    */
   async sendSms(dstaddr, message, options = /** @type {Record<string, unknown>} */ ({})) {
     const params = mergeOptions({ dstaddr, message }, options, ['dstaddr', 'message']);
-    return new models.SendResult(await this.#request('PUT', '/sms/send', params, 'sms'));
+    return new models.SendResult(await this.#request('PUT', '/sms/send', params, 'http'));
   }
 
   /**
@@ -396,7 +396,7 @@ export class WorldText {
    * @returns {Promise<models.SmsStatus>}  Requires the `sms` permission.
    */
   async querySmsStatus(msgid) {
-    return new models.SmsStatus(await this.#request('GET', '/sms/query', { msgid }, 'sms'));
+    return new models.SmsStatus(await this.#request('GET', '/sms/query', { msgid }, 'http'));
   }
 
   // -------------------------------------------------------------------- hlr
@@ -407,7 +407,7 @@ export class WorldText {
    * @returns {Promise<models.HlrResult>}  Requires the `hlr` permission.
    */
   async lookupHlr(msisdn) {
-    return new models.HlrResult(await this.#request('GET', '/hlr/lookup', { msisdn }, 'hlr'));
+    return new models.HlrResult(await this.#request('GET', '/hlr/lookup', { msisdn }, 'http'));
   }
 
   /**
@@ -416,7 +416,7 @@ export class WorldText {
    * @returns {Promise<models.MnpResult>}  Requires the `hlr` permission.
    */
   async lookupMnp(msisdn) {
-    return new models.MnpResult(await this.#request('GET', '/hlr/mnp', { msisdn }, 'hlr'));
+    return new models.MnpResult(await this.#request('GET', '/hlr/mnp', { msisdn }, 'http'));
   }
 
   /**
@@ -425,7 +425,7 @@ export class WorldText {
    * @returns {Promise<models.NumberInfo>}  Requires the `hlr` permission.
    */
   async getNumberInfo(msisdn) {
-    return new models.NumberInfo(await this.#request('GET', '/hlr/info', { msisdn }, 'hlr'));
+    return new models.NumberInfo(await this.#request('GET', '/hlr/info', { msisdn }, 'http'));
   }
 
   // ----------------------------------------------------------------- groups
@@ -437,7 +437,7 @@ export class WorldText {
    */
   async createGroup(name) {
     return new models.CreateGroupResult(
-      await this.#request('PUT', '/group/create', { name }, 'groups'),
+      await this.#request('PUT', '/group/create', { name }, 'http'),
     );
   }
 
@@ -448,7 +448,7 @@ export class WorldText {
    */
   async deleteGroup(grpid) {
     return new models.DeleteResult(
-      await this.#request('DELETE', '/group/destroy', { grpid }, 'groups'),
+      await this.#request('DELETE', '/group/destroy', { grpid }, 'http'),
     );
   }
 
@@ -462,7 +462,7 @@ export class WorldText {
   async addGroupEntry(grpid, number, options = /** @type {Record<string, unknown>} */ ({})) {
     const params = mergeOptions({ grpid, number }, options, ['grpid', 'number']);
     return new models.AddEntriesResult(
-      await this.#request('PUT', '/group/entry', params, 'groups'),
+      await this.#request('PUT', '/group/entry', params, 'http'),
     );
   }
 
@@ -474,7 +474,7 @@ export class WorldText {
    */
   async deleteGroupEntry(grpid, number) {
     return new models.DeleteResult(
-      await this.#request('DELETE', '/group/entry', { grpid, number }, 'groups'),
+      await this.#request('DELETE', '/group/entry', { grpid, number }, 'http'),
     );
   }
 
@@ -491,7 +491,7 @@ export class WorldText {
     }
     const params = { grpid, numbers: [...numbers].join('\n') };
     return new models.AddEntriesResult(
-      await this.#request('PUT', '/group/entries', params, 'groups'),
+      await this.#request('PUT', '/group/entries', params, 'http'),
     );
   }
 
@@ -502,7 +502,7 @@ export class WorldText {
    */
   async getGroupNumbers(grpid) {
     return new models.GroupNumbers(
-      await this.#request('GET', '/group/numbers', { grpid }, 'groups'),
+      await this.#request('GET', '/group/numbers', { grpid }, 'http'),
     );
   }
 
@@ -513,7 +513,7 @@ export class WorldText {
    */
   async getGroupDetails(grpid) {
     return new models.GroupDetails(
-      await this.#request('GET', '/group/details', { grpid }, 'groups'),
+      await this.#request('GET', '/group/details', { grpid }, 'http'),
     );
   }
 
@@ -522,7 +522,7 @@ export class WorldText {
    * @returns {Promise<models.GroupList>}  Requires the `groups` permission.
    */
   async listGroups() {
-    return new models.GroupList(await this.#request('GET', '/group/list', {}, 'groups'));
+    return new models.GroupList(await this.#request('GET', '/group/list', {}, 'http'));
   }
 
   /**
@@ -532,7 +532,7 @@ export class WorldText {
    */
   async deleteGroupContents(grpid) {
     return new models.DeleteResult(
-      await this.#request('DELETE', '/group/contents', { grpid }, 'groups'),
+      await this.#request('DELETE', '/group/contents', { grpid }, 'http'),
     );
   }
 
@@ -547,7 +547,7 @@ export class WorldText {
    */
   async getGroupCost(grpid, message = '') {
     return new models.GroupCost(
-      await this.#request('GET', '/group/cost', { grpid, message }, 'sms'),
+      await this.#request('GET', '/group/cost', { grpid, message }, 'http'),
     );
   }
 
@@ -560,7 +560,7 @@ export class WorldText {
    */
   async sendGroupSms(grpid, message, options = /** @type {Record<string, unknown>} */ ({})) {
     const params = mergeOptions({ grpid, message }, options, ['grpid', 'message']);
-    return new models.SendResult(await this.#request('PUT', '/group/send', params, 'sms'));
+    return new models.SendResult(await this.#request('PUT', '/group/send', params, 'http'));
   }
 }
 
@@ -595,7 +595,7 @@ function isSuccess(status) {
 }
 
 /**
- * Pull `scope="sms"` out of a `WWW-Authenticate` header, if present.
+ * Pull `scope="http"` out of a `WWW-Authenticate` header, if present.
  * @param {Record<string, string|string[]|undefined>} headers
  * @returns {string|null}
  */

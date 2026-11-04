@@ -115,22 +115,22 @@ public sealed class SuccessTests : MockTestBase
     }
 
     [Fact]
-    public async Task Group_cost_and_group_send_need_sms_not_groups()
+    public async Task Group_cost_and_group_send_need_the_http_interface()
     {
-        // The spec says group/cost and group/send require sms; a groups token
-        // must be refused for both.
-        using var smsClient = Client("test-sms");
-        using var groupsClient = Client("test-groups");
+        // Scopes name interfaces: an email-only credential is refused for both
+        // of these, even though pricing a send costs nothing.
+        using var httpClient = Client("test-http");
+        using var emailClient = Client("test-email");
 
-        var cost = await smsClient.GetGroupCostAsync("4242");
+        var cost = await httpClient.GetGroupCostAsync("4242");
         Assert.Equal("2.0", cost.Value);
         Assert.Equal(2, cost.EntryCountValue);
 
-        var sent = await smsClient.SendGroupSmsAsync("4242", "hi");
+        var sent = await httpClient.SendGroupSmsAsync("4242", "hi");
         Assert.Equal("10002", sent.Id);
 
-        await Assert.ThrowsAsync<PermissionException>(() => groupsClient.GetGroupCostAsync("4242"));
-        await Assert.ThrowsAsync<PermissionException>(() => groupsClient.SendGroupSmsAsync("4242", "hi"));
+        await Assert.ThrowsAsync<PermissionException>(() => emailClient.GetGroupCostAsync("4242"));
+        await Assert.ThrowsAsync<PermissionException>(() => emailClient.SendGroupSmsAsync("4242", "hi"));
     }
 
     [Fact]
