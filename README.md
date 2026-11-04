@@ -1,6 +1,6 @@
 # World Text API helper libraries
 
-Helper libraries for the World Text HTTP API, [spec version 3.0](https://www.world-text.com/openapi/spec.yaml).
+Helper libraries for the World Text HTTP API, [spec version 3.1](https://www.world-text.com/openapi/spec.yaml).
 One directory per language, each with its own README, tests, and a consistent
 design.
 

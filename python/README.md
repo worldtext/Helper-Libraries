@@ -1,6 +1,6 @@
 # world-text-python
 
-Python client for the World Text HTTP API (spec version 3.0), using bearer
+Python client for the World Text HTTP API (spec version 3.1), using bearer
 authentication.
 
 Standard library only — no `pip install`, no dependencies.

@@ -1,6 +1,6 @@
 # world-text-go
 
-Go client for the World Text HTTP API (spec version 3.0), using bearer
+Go client for the World Text HTTP API (spec version 3.1), using bearer
 authentication. Go 1.22+, standard library only — no third-party modules.
 
 Module path: `nevis.io/worldtext`, package `worldtext`.

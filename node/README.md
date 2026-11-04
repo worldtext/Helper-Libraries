@@ -1,6 +1,6 @@
 # world-text (Node)
 
-Client for the World Text HTTP API (spec version 3.0), using bearer
+Client for the World Text HTTP API (spec version 3.1), using bearer
 authentication.
 
 Zero dependencies — `node:http`/`node:https` for transport, `node:test` and

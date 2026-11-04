@@ -1,6 +1,6 @@
 # WorldText.Api (.NET)
 
-C# client for the World Text HTTP API (spec version 3.0), using bearer
+C# client for the World Text HTTP API (spec version 3.1), using bearer
 authentication. Targets .NET 8; `System.Text.Json` and `HttpClient` only.
 
 ## Install

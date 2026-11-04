@@ -1,6 +1,6 @@
 # world-text-java
 
-Java client for the World Text HTTP API (spec version 3.0), using bearer
+Java client for the World Text HTTP API (spec version 3.1), using bearer
 authentication.
 
 Java 8 or newer, **no dependencies**: transport is `HttpURLConnection` and JSON

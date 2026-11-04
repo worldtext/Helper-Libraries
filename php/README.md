@@ -1,6 +1,6 @@
 # world-text-php
 
-PHP client for the World Text HTTP API (spec version 3.0), using bearer
+PHP client for the World Text HTTP API (spec version 3.1), using bearer
 authentication.
 
 PHP 8.2+, **no dependencies and no Composer**: a small `spl_autoload_register`
