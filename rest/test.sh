@@ -210,10 +210,10 @@ test_success_and_typed_values() {
     eq 0 "$rc" 'wt_ping exits 0'
     eq '{"status": "0"}' "$out" 'wt_ping returns status 0'
 
-    out=$(wt_get_host); rc=$?
+    out=$(wt_get_details); rc=$?
     show "$out"
-    eq 0 "$rc" 'wt_get_host exits 0'
-    contains "$out" '"hostname": "sms1.example"' 'wt_get_host returns the hostname'
+    eq 0 "$rc" 'wt_get_details exits 0'
+    contains "$out" '"accountid": "4"' 'wt_get_details returns the accountid'
 }
 
 test_sms() {

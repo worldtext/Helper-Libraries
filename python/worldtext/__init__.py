@@ -17,7 +17,7 @@ from .errors import WorldTextError, AuthenticationError, PermissionError_, ApiEr
 from .models import (
     Credits,
     Cost,
-    HostName,
+    AccountDetails,
     HlrResult,
     MnpResult,
     NumberInfo,
@@ -44,7 +44,7 @@ __all__ = [
     "ApiError",
     "Credits",
     "Cost",
-    "HostName",
+    "AccountDetails",
     "HlrResult",
     "MnpResult",
     "NumberInfo",

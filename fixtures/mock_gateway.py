@@ -49,7 +49,7 @@ TOKENS = {
 SCOPES = {
     "/admin/credits": "http",
     "/admin/ping": "http",
-    "/admin/host": "http",
+    "/admin/details": "http",
     "/hlr/lookup": "http",
     "/hlr/mnp": "http",
     "/hlr/info": "http",
@@ -136,8 +136,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/admin/credits":
             return self._reply(200, {"status": OK, "credits": "2950"})
 
-        if path == "/admin/host":
-            return self._reply(200, {"status": OK, "hostname": "sms1.example"})
+        if path == "/admin/details":
+            return self._reply(200, {"status": OK, "accountid": "4"})
 
         if path == "/sms/cost":
             if not args.get("dstaddr"):

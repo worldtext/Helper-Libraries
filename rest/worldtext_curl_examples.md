@@ -63,12 +63,12 @@ wherever this document says `-X PUT`.
 
 ## 3. Permissions
 
-A token carries one or more of `sms`, `groups`, `admin`, `hlr`. Calling an
-operation outside them is a **403** whose `WWW-Authenticate` header names the
-missing scope:
+A token carries the interfaces it may be used on: `http`, `email`, `bulk`.
+Calling from an interface it does not carry is a **403** whose
+`WWW-Authenticate` header names the one that was needed:
 
 ```
-WWW-Authenticate: Bearer error="insufficient_scope", scope="admin"
+WWW-Authenticate: Bearer error="insufficient_scope", scope="http"
 ```
 
 To surface it from the shell:
@@ -110,17 +110,17 @@ wtx "$WT_BASE_URL/admin/credits"
 {"status": "0", "credits": "2950"}
 ```
 
-#### getHost — `GET /admin/host`
+#### getDetails — `GET /admin/details`
 
 No parameters. Which gateway host answered — useful when a DNS name fronts
 several.
 
 ```sh
-wtx "$WT_BASE_URL/admin/host"
+wtx "$WT_BASE_URL/admin/details"
 ```
 
 ```json
-{"status": "0", "hostname": "sms1.example"}
+{"status": "0", "accountid": "4"}
 ```
 
 ### SMS — permission `sms`
@@ -482,11 +482,11 @@ wtx "$WT_BASE_URL/admin/credits" | jq -r '.credits'
 ```sh
 python3 ../fixtures/mock_gateway.py 0 &      # prints "PORT <n>"
 export WT_BASE_URL="http://127.0.0.1:<n>"
-export WT_TOKEN=test-all                     # sms+groups+admin+hlr
+export WT_TOKEN=test-all                     # http+email+bulk
 
 wtx "$WT_BASE_URL/admin/credits"
 # {"status": "0", "credits": "2950"}
 ```
 
-Mock tokens: `test-sms`, `test-groups`, `test-admin`, `test-hlr`, `test-all`.
-Anything else is a 401.
+Mock tokens: `test-http`, `test-all` (http+email+bulk), and `test-email`,
+`test-bulk`, `test-none` for the refusal paths. Anything else is a 401.

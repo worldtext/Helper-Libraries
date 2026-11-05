@@ -46,9 +46,9 @@ and can send messages, because that is what a token is issued for. A call from
 an interface the token does not carry raises `PermissionError_`.
 
 ```js
-const wt = new WorldText({ token, permissions: ['sms', 'admin'] });
+const wt = new WorldText({ token, permissions: ['http'] });
 await wt.getCredits();                 // fine
-await wt.listGroups();                 // PermissionError, requiredScope: 'groups', no request sent
+await wt.listGroups();                 // fine: http covers the whole API
 ```
 
 ## Methods
@@ -60,7 +60,7 @@ Extras after a `[options]` argument are passed through to the API untouched.
 |---|---|---|---|
 | `ping()` | `http` | `PingResult` | Liveness (`.ok`) |
 | `getCredits()` | `http` | `Credits` | Balance |
-| `getHost()` | `http` | `HostName` | Serving host name |
+| `getDetails()` | `http` | `AccountDetails` | Account the credential belongs to |
 | `getSmsCost(dstaddr, message?)` | `http` | `Credits` | Price without sending |
 | `sendSms(dstaddr, message, [options])` | `http` | `SendResult` | Extra fields pass through |
 | `querySmsStatus(msgid)` | `http` | `SmsStatus` | Delivery state (`.final`) |

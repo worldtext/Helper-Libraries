@@ -52,7 +52,7 @@ an interface the token does not carry raises `PermissionError_`.
 |---|---|---|---|
 | `ping()` | `http` | `PingResult` | `->ok` |
 | `getCredits()` | `http` | `Credits` | `->credits` is a string |
-| `getHost()` | `http` | `HostName` | `->hostname` |
+| `getDetails()` | `http` | `AccountDetails` | `->accountid` |
 | `getSmsCost($dstaddr, $message = '')` | `http` | `Cost` | Price without sending |
 | `sendSms($dstaddr, $message, $options = [])` | `http` | `SendResult` | Extra fields pass through |
 | `querySmsStatus($msgid)` | `http` | `SmsStatus` | `->isFinal()` |

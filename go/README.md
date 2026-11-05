@@ -72,7 +72,7 @@ All methods take `ctx context.Context` first and return a typed result plus
 |---|---|---|
 | `Ping(ctx)` | `http` | Liveness; `.OK` |
 | `GetCredits(ctx)` | `http` | Balance in `.Credits` |
-| `GetHost(ctx)` | `http` | Serving host name |
+| `GetDetails(ctx)` | `http` | Account the credential belongs to |
 | `GetSmsCost(ctx, dstAddr, message)` | `http` | Price without sending |
 | `SendSms(ctx, dstAddr, message, opts)` | `http` | Extra fields via `opts Params` |
 | `QuerySmsStatus(ctx, msgID)` | `http` | `.State`, `.Final()` |

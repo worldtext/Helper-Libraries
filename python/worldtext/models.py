@@ -67,12 +67,12 @@ class Credits(Model):
         return _dec(self.credits)
 
 
-class HostName(Model):
-    _fields = ("hostname",)
+class AccountDetails(Model):
+    _fields = ("accountid",)
 
     def __init__(self, raw):
         super().__init__(raw)
-        self.hostname = _get(raw, "hostname")
+        self.accountid = _get(raw, "accountid")
 
 
 class Cost(Model):

@@ -29,7 +29,7 @@ export {
   Model,
   PingResult,
   Credits,
-  HostName,
+  AccountDetails,
   SentMessage,
   SendResult,
   SmsStatus,

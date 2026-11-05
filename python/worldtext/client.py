@@ -125,9 +125,9 @@ class WorldText(object):
         """Credit balance. Requires the ``admin`` permission."""
         return models.Credits(self._request("GET", "/admin/credits"))
 
-    def get_host(self):
-        """Name of the host that served the request. Requires ``http``."""
-        return models.HostName(self._request("GET", "/admin/host"))
+    def get_details(self):
+        """The account the credential belongs to. Requires ``http``."""
+        return models.AccountDetails(self._request("GET", "/admin/details"))
 
     # ------------------------------------------------------------------- sms
 

@@ -128,21 +128,21 @@ curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/admin/credits"
 `credits` is a **string**. Prepay accounts see credits remaining; account
 customers see credits used this period as a negative balance.
 
-#### `getHost` — name of the serving host
+#### `getDetails` — the account the credential belongs to
 
 | | |
 |---|---|
-| Method / path | `GET /admin/host` |
+| Method / path | `GET /admin/details` |
 | Parameters | none |
 | Interface | `http` |
-| Helper | `wt_get_host` |
+| Helper | `wt_get_details` |
 
 ```sh
-curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/admin/host"
+curl -sS -H "Authorization: Bearer $WT_TOKEN" "$WT_BASE_URL/admin/details"
 ```
 
 ```json
-{"status": "0", "hostname": "sms1.example"}
+{"status": "0", "accountid": "4"}
 ```
 
 ### SMS
@@ -518,7 +518,7 @@ JSON envelope on stdout and returns 0 on success.
 |---|---|---|
 | `ping` | `wt_ping` | `http` |
 | `getCredits` | `wt_get_credits` | `http` |
-| `getHost` | `wt_get_host` | `http` |
+| `getDetails` | `wt_get_details` | `http` |
 | `getSmsCost` | `wt_get_sms_cost <dstaddr> [message]` | `http` |
 | `sendSms` | `wt_send_sms <dstaddr> <message> [param=value …]` | `http` |
 | `querySmsStatus` | `wt_query_sms_status <msgid>` | `http` |
@@ -579,7 +579,7 @@ out=$(wt_get_credits) || {
     echo "kind:  $(wt_last_error_kind)"      # authentication | permission | api | transport
     echo "http:  $(wt_last_status)"          # 401, 403, 400, 500, ...
     echo "code:  $(wt_last_code)"            # 1000, 1200, 1100, ...
-    echo "scope: $(wt_last_scope)"           # admin, sms, groups, hlr (403 only)
+    echo "scope: $(wt_last_scope)"           # http, email or bulk (403 only)
     echo "desc:  $(wt_last_desc)"            # the gateway's own message
     retry=$(wt_last_retryable)               # 1 when status "2"/"3" or HTTP 5xx
 }
@@ -654,7 +654,7 @@ is left behind.
 * **Error envelope on non-2xx** — `{"status":"1","error":"1000","desc":"…"}`,
   including on 401 and 403.
 * **401** unknown or missing token; **403** valid token, wrong permission, with
-  `WWW-Authenticate: Bearer error="insufficient_scope", scope="admin"`;
+  `WWW-Authenticate: Bearer error="insufficient_scope", scope="http"`;
   **400** argument validation (`1200`).
 * **Group id** arrives as `grpid` or `groupid` depending on the route.
 * **`PUT` and `POST`** are interchangeable on write routes.

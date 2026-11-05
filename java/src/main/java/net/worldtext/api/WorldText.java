@@ -131,9 +131,9 @@ public class WorldText {
         return new Credits(request("GET", "/admin/credits", null));
     }
 
-    /** Name of the host that served the request. Requires {@code admin}. */
-    public HostName getHost() {
-        return new HostName(request("GET", "/admin/host", null));
+    /** The account the credential belongs to. Requires {@code http}. */
+    public AccountDetails getDetails() {
+        return new AccountDetails(request("GET", "/admin/details", null));
     }
 
     // -------------------------------------------------------------------- sms

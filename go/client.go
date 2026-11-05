@@ -295,14 +295,14 @@ func (c *Client) GetCredits(ctx context.Context) (*Credits, error) {
 	return newCredits(raw), nil
 }
 
-// GetHost returns the name of the host that served the request. It needs
+// GetDetails returns the name of the host that served the request. It needs
 // "http".
-func (c *Client) GetHost(ctx context.Context) (*HostName, error) {
-	raw, err := c.do(ctx, http.MethodGet, "/admin/host", nil)
+func (c *Client) GetDetails(ctx context.Context) (*AccountDetails, error) {
+	raw, err := c.do(ctx, http.MethodGet, "/admin/details", nil)
 	if err != nil {
 		return nil, err
 	}
-	return newHostName(raw), nil
+	return newAccountDetails(raw), nil
 }
 
 // ------------------------------------------------------------------ SMS API

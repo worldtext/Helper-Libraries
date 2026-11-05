@@ -41,7 +41,7 @@ an interface the token does not carry raises `PermissionError_`.
 |---|---|---|
 | `ping()` | `http` | Liveness |
 | `get_credits()` | `http` | Balance |
-| `get_host()` | `http` | Serving host name |
+| `get_details()` | `http` | Account the credential belongs to |
 | `get_sms_cost(dstaddr, message="")` | `http` | Price without sending |
 | `send_sms(dstaddr, message, **options)` | `http` | Extra fields pass through |
 | `query_sms_status(msgid)` | `http` | Delivery state |

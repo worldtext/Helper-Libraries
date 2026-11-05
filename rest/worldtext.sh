@@ -661,9 +661,9 @@ wt_get_credits() {
     _wt_request GET /admin/credits
 }
 
-# Name of the host that served the request. -> {"status":"0","hostname":"..."}
-wt_get_host() {
-    _wt_request GET /admin/host
+# The account the credential belongs to. -> {"status":"0","accountid":"..."}
+wt_get_details() {
+    _wt_request GET /admin/details
 }
 
 # ==========================================================================

@@ -354,11 +354,11 @@ export class WorldText {
   }
 
   /**
-   * Name of the host that served the request.
-   * @returns {Promise<models.HostName>}  Requires the `admin` permission.
+   * The account the credential belongs to.
+   * @returns {Promise<models.AccountDetails>}  Requires the `admin` permission.
    */
-  async getHost() {
-    return new models.HostName(await this.#request('GET', '/admin/host', {}, 'http'));
+  async getDetails() {
+    return new models.AccountDetails(await this.#request('GET', '/admin/details', {}, 'http'));
   }
 
   // -------------------------------------------------------------------- sms

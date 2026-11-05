@@ -67,7 +67,7 @@ class TestSuccess(MockTestCase):
     def test_ping_and_host(self):
         wt = self.client("test-admin")
         self.assertTrue(wt.ping().ok)
-        self.assertEqual(wt.get_host().hostname, "sms1.example")
+        self.assertEqual(wt.get_details().accountid, "4")
 
     def test_sms_cost(self):
         cost = self.client("test-sms").get_sms_cost("447989000001", "hi")

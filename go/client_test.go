@@ -167,7 +167,7 @@ func TestGetCreditsParsesTypedResponse(t *testing.T) {
 	}
 }
 
-func TestPingAndGetHost(t *testing.T) {
+func TestPingAndGetDetails(t *testing.T) {
 	ctx := context.Background()
 	client := newClient(t, tokenAdmin)
 
@@ -179,12 +179,12 @@ func TestPingAndGetHost(t *testing.T) {
 		t.Error("Ping.OK = false, want true")
 	}
 
-	host, err := client.GetHost(ctx)
+	host, err := client.GetDetails(ctx)
 	if err != nil {
-		t.Fatalf("GetHost: %v", err)
+		t.Fatalf("GetDetails: %v", err)
 	}
-	if host.Hostname != "sms1.example" {
-		t.Errorf("Hostname = %q, want %q", host.Hostname, "sms1.example")
+	if host.Hostname != "4" {
+		t.Errorf("Hostname = %q, want %q", host.Hostname, "4")
 	}
 }
 

@@ -150,7 +150,7 @@ $suite->test('credits parse as a string and convert on demand', function () use 
 $suite->test('ping and host', function () use ($mock): void {
     $wt = client($mock, 'test-admin');
     Assert::true($wt->ping()->ok, 'ping ok');
-    Assert::same('sms1.example', $wt->getHost()->hostname, 'hostname');
+    Assert::same('4', $wt->getDetails()->accountid, 'accountid');
 });
 
 $suite->test('sms cost', function () use ($mock): void {
@@ -248,7 +248,7 @@ $suite->test('all twenty operations succeed against the gateway', function () us
     $calls = [
         'ping' => fn () => $wt->ping(),
         'getCredits' => fn () => $wt->getCredits(),
-        'getHost' => fn () => $wt->getHost(),
+        'getDetails' => fn () => $wt->getDetails(),
         'getSmsCost' => fn () => $wt->getSmsCost('447989000001'),
         'sendSms' => fn () => $wt->sendSms('447989000001', 'hi'),
         'querySmsStatus' => fn () => $wt->querySmsStatus('10001'),

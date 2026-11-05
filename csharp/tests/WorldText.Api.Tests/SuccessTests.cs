@@ -26,7 +26,7 @@ public sealed class SuccessTests : MockTestBase
         using var client = Client("test-admin");
 
         Assert.True((await client.PingAsync()).Ok);
-        Assert.Equal("sms1.example", (await client.GetHostAsync()).Hostname);
+        Assert.Equal("4", (await client.GetDetailsAsync()).Hostname);
     }
 
     [Fact]

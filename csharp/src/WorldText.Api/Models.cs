@@ -134,10 +134,10 @@ public sealed record Credits : Model
     protected override IEnumerable<string> Describe() => [$"Credits={Show(Value)}"];
 }
 
-/// <summary>Name of the host that served the request.</summary>
-public sealed record HostName : Model
+/// <summary>The account the credential belongs to.</summary>
+public sealed record AccountDetails : Model
 {
-    internal HostName(JsonElement raw) : base(raw) => Hostname = Wire.Text(raw, "hostname");
+    internal AccountDetails(JsonElement raw) : base(raw) => Hostname = Wire.Text(raw, "accountid");
 
     public string? Hostname { get; }
 

@@ -20,7 +20,7 @@ use WorldText\Model\GroupDetails;
 use WorldText\Model\GroupList;
 use WorldText\Model\GroupNumbers;
 use WorldText\Model\HlrResult;
-use WorldText\Model\HostName;
+use WorldText\Model\AccountDetails;
 use WorldText\Model\MnpResult;
 use WorldText\Model\NumberInfo;
 use WorldText\Model\PingResult;
@@ -375,13 +375,13 @@ final class WorldText
     }
 
     /**
-     * Name of the host that served the request. Requires ``http``.
+     * The account the credential belongs to. Requires ``http``.
      *
      * @throws WorldTextException
      */
-    public function getHost(): HostName
+    public function getDetails(): AccountDetails
     {
-        return new HostName($this->request('GET', '/admin/host'));
+        return new AccountDetails($this->request('GET', '/admin/details'));
     }
 
     // ------------------------------------------------------------------- sms

@@ -102,7 +102,7 @@ describe('successful calls and typed parsing', { skip }, () => {
   test('ping and host', async () => {
     const wt = client('test-admin');
     assert.equal((await wt.ping()).ok, true);
-    assert.equal((await wt.getHost()).hostname, 'sms1.example');
+    assert.equal((await wt.getDetails()).accountid, '4');
   });
 
   test('sms cost is a decimal string', async () => {
@@ -210,7 +210,7 @@ describe('successful calls and typed parsing', { skip }, () => {
     assert.deepEqual(JSON.parse(JSON.stringify(credits)), { credits: '2950' });
     const other = await client().getCredits();
     assert.equal(credits.equals(other), true);
-    const host = await client().getHost();
+    const host = await client().getDetails();
     assert.equal(credits.equals(host), false);
   });
 });
@@ -241,7 +241,7 @@ describe('typed errors', { skip }, () => {
     // One call per operation with a token that has the wrong permission.
     const cases = [
       ['admin', (wt) => wt.ping()],
-      ['admin', (wt) => wt.getHost()],
+      ['admin', (wt) => wt.getDetails()],
       ['sms', (wt) => wt.sendSms('447989000001', 'hi')],
       ['sms', (wt) => wt.getSmsCost('447989000001')],
       ['sms', (wt) => wt.querySmsStatus('1')],

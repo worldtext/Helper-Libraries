@@ -141,14 +141,14 @@ export class Credits extends Model {
   }
 }
 
-/** Response of `getHost()`. */
-export class HostName extends Model {
+/** Response of `getDetails()`. */
+export class AccountDetails extends Model {
   /** @param {Record<string, unknown>} raw */
   constructor(raw) {
-    const hostname = text(pick(raw, 'hostname'));
-    super(raw, { hostname });
-    /** @type {string|null} Name of the host that served the request. */
-    this.hostname = hostname;
+    const accountid = text(pick(raw, 'accountid'));
+    super(raw, { accountid });
+    /** @type {string|null} The account the credential belongs to. */
+    this.accountid = accountid;
   }
 }
 

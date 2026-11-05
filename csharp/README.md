@@ -44,7 +44,7 @@ an interface the token does not carry raises `PermissionDeniedException`.
 |---|---|---|
 | `PingAsync()` | `http` | Liveness |
 | `GetCreditsAsync()` | `http` | Balance |
-| `GetHostAsync()` | `http` | Serving host |
+| `GetDetailsAsync()` | `http` | Account the credential belongs to |
 | `GetSmsCostAsync(dstaddr, message)` | `http` | Price without sending |
 | `SendSmsAsync(dstaddr, message, …)` | `http` | |
 | `QuerySmsStatusAsync(msgid)` | `http` | Delivery state |

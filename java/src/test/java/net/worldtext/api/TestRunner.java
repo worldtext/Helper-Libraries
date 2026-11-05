@@ -259,7 +259,7 @@ public final class TestRunner {
     static void testClientPingAndHost() throws IOException {
         WorldText wt = client("test-admin");
         isTrue(wt.ping().isOk(), "ping ok");
-        eq("sms1.example", wt.getHost().getHostname(), "hostname");
+        eq("4", wt.getDetails().getDetailsname(), "accountid");
     }
 
     static void testClientSmsCost() throws IOException {

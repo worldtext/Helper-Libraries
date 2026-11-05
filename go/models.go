@@ -88,8 +88,8 @@ type Credits struct {
 	Raw     map[string]any
 }
 
-// HostName names the server that answered.
-type HostName struct {
+// AccountDetails names the server that answered.
+type AccountDetails struct {
 	Hostname string
 	Raw      map[string]any
 }
@@ -250,8 +250,8 @@ func newCredits(raw map[string]any) *Credits {
 	return &Credits{Credits: get(raw, "credits"), Raw: raw}
 }
 
-func newHostName(raw map[string]any) *HostName {
-	return &HostName{Hostname: get(raw, "hostname"), Raw: raw}
+func newAccountDetails(raw map[string]any) *AccountDetails {
+	return &AccountDetails{Hostname: get(raw, "accountid"), Raw: raw}
 }
 
 func newCost(raw map[string]any) *Cost {

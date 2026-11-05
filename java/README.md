@@ -59,7 +59,7 @@ returning `BigDecimal`; nothing is ever parsed to `float`/`double`.
 |---|---|---|---|
 | `ping()` | `http` | `PingResult` | Liveness; `isOk()` |
 | `getCredits()` | `http` | `Credits` | Balance; `getCredits()`, `asDecimal()` |
-| `getHost()` | `http` | `HostName` | Serving host name |
+| `getDetails()` | `http` | `AccountDetails` | Account the credential belongs to |
 | `getSmsCost(dstaddr)` / `getSmsCost(dstaddr, message)` | `http` | `Cost` | Price without sending |
 | `sendSms(dstaddr, message)` / `sendSms(dstaddr, message, options)` | `http` | `SendResult` | Extra fields pass through |
 | `querySmsStatus(msgid)` | `http` | `SmsStatus` | Delivery state; `isFinal()` |

@@ -112,9 +112,9 @@ public sealed class WorldTextClient : IDisposable
     public async Task<Credits> GetCreditsAsync(CancellationToken cancellationToken = default) =>
         new(await SendAsync(HttpMethod.Get, "/admin/credits", null, cancellationToken).ConfigureAwait(false));
 
-    /// <summary>Name of the host that served the request. Requires the <c>admin</c> permission.</summary>
-    public async Task<HostName> GetHostAsync(CancellationToken cancellationToken = default) =>
-        new(await SendAsync(HttpMethod.Get, "/admin/host", null, cancellationToken).ConfigureAwait(false));
+    /// <summary>The account the credential belongs to. Requires the <c>http</c> interface.</summary>
+    public async Task<AccountDetails> GetDetailsAsync(CancellationToken cancellationToken = default) =>
+        new(await SendAsync(HttpMethod.Get, "/admin/details", null, cancellationToken).ConfigureAwait(false));
 
     // ------------------------------------------------------------------ sms
 
